@@ -12,13 +12,14 @@
 
 
 #define MACOS     0
-#define FKEYS     1
-#define NUMBERS   2
-#define WINDOWS   3
-#define W_FKEYS   4
-#define W_NUMBERS 5
-#define MATHS     6
-#define KB_CONFIG 7
+#define GRAPHITE  1
+#define FKEYS     2
+#define NUMBERS   3
+#define WINDOWS   4
+#define W_FKEYS   5
+#define W_NUMBERS 6
+#define MATHS     7
+#define KB_CONFIG 8
 
 
 / {
@@ -69,21 +70,21 @@
             tapping-term-ms = <200>;
             bindings = <&kp RSHFT>, <&caps_word>;
         };
-        // Toggle Windows layer
+        // Toggle Windows/Graphite layer left
         td4: tap_dance_4 {
             compatible = "zmk,behavior-tap-dance";
             label = "TAP_DANCE_4";
             #binding-cells = <0>;
             tapping-term-ms = <200>;
-            bindings = <&kp LGUI>, <&tog WINDOWS>;
+            bindings = <&kp LGUI>, <&tog WINDOWS>, <&tog GRAPHITE>;
         };
-        // Toggle Windows layer
+        // Toggle Windows/Graphite layer right
         td5: tap_dance_5 {
             compatible = "zmk,behavior-tap-dance";
             label = "TAP_DANCE_5";
             #binding-cells = <0>;
             tapping-term-ms = <200>;
-            bindings = <&kp RGUI>, <&tog WINDOWS>;
+            bindings = <&kp RGUI>, <&tog WINDOWS>, <&tog GRAPHITE>;
         };
         // Backspace a whole word when holding backspace
         backspace_word: backspace_word {
@@ -310,6 +311,23 @@
   &kp TAB     &kp A     &kp S      &kp D        &kp F     &kp G                                 &kp H   &kp J     &kp K      &kp L    &kp SEMI    &kp SQT
 //          |         |          |           |          |        +-----------+    +-----------|       |       |           |         |          |           //
     &td2      &kp Z     &kp X      &kp C        &kp V     &kp B     &kp F16          &kp F17    &kp N   &kp M   &kp COMMA   &kp DOT    &kp FSLH     &td3
+//--------------------|          |           |          |        |           |    |           |       |       |           |--------------------------------//  
+                        &kp LALT   &kp LCTRL     &td4     &td0     &kp ENTER        &kp SPACE   &td1    &td5    &kp RCTRL   &kp DEL
+//                    +----------|-----------|----------|--------------------+    +-----------|-------|--------|-----------|---------+                      //
+            >;
+        };
+
+        graphite_layer {
+            label = "Graphite";
+            sensor-bindings = <&inc_dec_kp UP DOWN &inc_dec_kp LEFT RIGHT>;
+            bindings = <
+//---------------------------------------------------------------+                            +---------------------------------------------------------------//
+//          |         |          |           |          |        |                            |       |       |           |         |          |           // 
+  &kp GRAVE   &kp B     &kp L      &kp D        &kp W     &kp Z                                 &kp F   &kp O     &kp U      &kp J   &kp SEMI   &backspace_word 0 BSPC
+//          |         |          |           |          |        |                            |       |       |           |         |          |           //
+  &kp TAB     &kp N     &kp R      &kp T        &kp S     &kp G                                 &kp Y   &kp H     &kp A      &kp E     &kp I     &kp SQT
+//          |         |          |           |          |        +-----------+    +-----------|       |       |           |         |          |           //
+    &td2      &kp Q     &kp X      &kp M        &kp C     &kp V     &kp F16          &kp F17    &kp K   &kp P   &kp COMMA   &kp DOT   &kp FSLH     &td3
 //--------------------|          |           |          |        |           |    |           |       |       |           |--------------------------------//  
                         &kp LALT   &kp LCTRL     &td4     &td0     &kp ENTER        &kp SPACE   &td1    &td5    &kp RCTRL   &kp DEL
 //                    +----------|-----------|----------|--------------------+    +-----------|-------|--------|-----------|---------+                      //
