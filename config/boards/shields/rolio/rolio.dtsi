@@ -32,6 +32,7 @@ RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5) RC(3,0)   RC(3,11) RC(2,6) RC(2,
     kscan0: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         label = "KSCAN";
+        wakeup-source;
 
         diode-direction = "col2row";
         row-gpios
@@ -72,6 +73,13 @@ RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5) RC(3,0)   RC(3,11) RC(2,6) RC(2,
         pwm_led_0 {
             pwms = <&pwm0 0 10000 PWM_POLARITY_NORMAL>;
         };
+    };
+
+    ext-power {
+        compatible = "zmk,ext-power-generic";
+        label = "EXT_POWER";
+        control-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
+        init-delay-ms = <50>;
     };
 
 };
