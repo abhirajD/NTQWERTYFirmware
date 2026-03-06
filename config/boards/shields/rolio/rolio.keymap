@@ -11,8 +11,8 @@
 #include <dt-bindings/zmk/backlight.h>
 
 
-#define MACOS     0
-#define GRAPHITE  1
+#define GRAPHITE  0
+#define MACOS     1
 #define FKEYS     2
 #define NUMBERS   3
 #define WINDOWS   4
@@ -70,40 +70,34 @@
             tapping-term-ms = <200>;
             bindings = <&kp RSHFT>, <&caps_word>;
         };
-        // Toggle Windows/Graphite layer left
+        // Toggle Windows/QWERTY layer left
         td4: tap_dance_4 {
             compatible = "zmk,behavior-tap-dance";
             label = "TAP_DANCE_4";
             #binding-cells = <0>;
             tapping-term-ms = <200>;
-            bindings = <&kp LGUI>, <&tog WINDOWS>, <&tog GRAPHITE>;
+            bindings = <&kp LGUI>, <&tog WINDOWS>, <&tog MACOS>;
         };
-        // Toggle Windows/Graphite layer right
+        // Toggle Windows/QWERTY layer right
         td5: tap_dance_5 {
             compatible = "zmk,behavior-tap-dance";
             label = "TAP_DANCE_5";
             #binding-cells = <0>;
             tapping-term-ms = <200>;
-            bindings = <&kp RGUI>, <&tog WINDOWS>, <&tog GRAPHITE>;
+            bindings = <&kp RGUI>, <&tog WINDOWS>, <&tog MACOS>;
         };
-        // Backspace a whole word when holding backspace
+        // Tap = char delete, Hold = word delete (OS auto-repeats)
+        // require-prior-idle-ms: if typing recently, always taps instantly
+        // quick-tap-ms: rapid backspace mashing always deletes chars
         backspace_word: backspace_word {
             compatible = "zmk,behavior-hold-tap";
             label = "BACKSPACE_WORD";
             #binding-cells = <2>;
-            tapping_term_ms = <135>;
-            quick_tap_ms = <0>;
+            tapping-term-ms = <280>;
+            quick-tap-ms = <175>;
+            require-prior-idle-ms = <150>;
             flavor = "tap-preferred";
-            bindings = <&bsp_word>, <&kp>;
-        };
-        w_backspace_word: w_backspace_word {
-            compatible = "zmk,behavior-hold-tap";
-            label = "WINDOWS_BACKSPACE_WORD";
-            #binding-cells = <2>;
-            tapping_term_ms = <135>;
-            quick_tap_ms = <0>;
-            flavor = "tap-preferred";
-            bindings = <&w_bsp_word>, <&kp>;
+            bindings = <&kp>, <&kp>;
         };
         //Mac OS Zoom
         mac_zoom: mac_zoom {
@@ -211,27 +205,7 @@
                 , <&macro_release &kp LGUI>
                 ;
         };
-        // Word backspace macros
-        bsp_word: bsp_word {
-            label = "BSP_WORD";
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings
-                = <&macro_press &kp LALT>
-                , <&macro_tap &kp BSPC>
-                , <&macro_release &kp LALT>
-                ;
-        };
-        w_bsp_word: w_bsp_word {
-            label = "W_BSP_WORD";
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings
-                = <&macro_press &kp LCTRL>
-                , <&macro_tap &kp BSPC>
-                , <&macro_release &kp LCTRL>
-                ;
-        };
+
         // Zoom macros
         zoom_in: zoom_in {
             label = "ZOOM_IN";
@@ -301,33 +275,33 @@
         compatible = "zmk,keymap";
 
         default_layer {
-            label = "Mac OS";
+            label = "Graphite";
             sensor-bindings = <&inc_dec_kp UP DOWN &inc_dec_kp LEFT RIGHT>;
             bindings = <
 //---------------------------------------------------------------+                            +---------------------------------------------------------------//
 //          |         |          |           |          |        |                            |       |       |           |         |          |           // 
-  &kp GRAVE   &kp Q     &kp W      &kp E        &kp R     &kp T                                 &kp Y   &kp U     &kp I      &kp O     &kp P     &backspace_word 0 BSPC
+  &kp GRAVE   &kp B     &kp L      &kp D        &kp W     &kp Z                                 &kp F   &kp O     &kp U      &kp J   &kp SEMI   &backspace_word LA(BSPC) BSPC
 //          |         |          |           |          |        |                            |       |       |           |         |          |           //
-  &kp TAB     &kp A     &kp S      &kp D        &kp F     &kp G                                 &kp H   &kp J     &kp K      &kp L    &kp SEMI    &kp SQT
+  &kp TAB     &kp N     &kp R      &kp T        &kp S     &kp G                                 &kp Y   &kp H     &kp A      &kp E     &kp I     &kp SQT
 //          |         |          |           |          |        +-----------+    +-----------|       |       |           |         |          |           //
-    &td2      &kp Z     &kp X      &kp C        &kp V     &kp B     &kp F16          &kp F17    &kp N   &kp M   &kp COMMA   &kp DOT    &kp FSLH     &td3
+    &td2      &kp Q     &kp X      &kp M        &kp C     &kp V     &kp F16          &kp F17    &kp K   &kp P   &kp COMMA   &kp DOT   &kp FSLH     &td3
 //--------------------|          |           |          |        |           |    |           |       |       |           |--------------------------------//  
                         &kp LALT   &kp LCTRL     &td4     &td0     &kp ENTER        &kp SPACE   &td1    &td5    &kp RCTRL   &kp DEL
 //                    +----------|-----------|----------|--------------------+    +-----------|-------|--------|-----------|---------+                      //
             >;
         };
 
-        graphite_layer {
-            label = "Graphite";
+        qwerty_layer {
+            label = "QWERTY";
             sensor-bindings = <&inc_dec_kp UP DOWN &inc_dec_kp LEFT RIGHT>;
             bindings = <
 //---------------------------------------------------------------+                            +---------------------------------------------------------------//
 //          |         |          |           |          |        |                            |       |       |           |         |          |           // 
-  &kp GRAVE   &kp B     &kp L      &kp D        &kp W     &kp Z                                 &kp F   &kp O     &kp U      &kp J   &kp SEMI   &backspace_word 0 BSPC
+  &kp GRAVE   &kp Q     &kp W      &kp E        &kp R     &kp T                                 &kp Y   &kp U     &kp I      &kp O     &kp P     &backspace_word LA(BSPC) BSPC
 //          |         |          |           |          |        |                            |       |       |           |         |          |           //
-  &kp TAB     &kp N     &kp R      &kp T        &kp S     &kp G                                 &kp Y   &kp H     &kp A      &kp E     &kp I     &kp SQT
+  &kp TAB     &kp A     &kp S      &kp D        &kp F     &kp G                                 &kp H   &kp J     &kp K      &kp L    &kp SEMI    &kp SQT
 //          |         |          |           |          |        +-----------+    +-----------|       |       |           |         |          |           //
-    &td2      &kp Q     &kp X      &kp M        &kp C     &kp V     &kp F16          &kp F17    &kp K   &kp P   &kp COMMA   &kp DOT   &kp FSLH     &td3
+    &td2      &kp Z     &kp X      &kp C        &kp V     &kp B     &kp F16          &kp F17    &kp N   &kp M   &kp COMMA   &kp DOT    &kp FSLH     &td3
 //--------------------|          |           |          |        |           |    |           |       |       |           |--------------------------------//  
                         &kp LALT   &kp LCTRL     &td4     &td0     &kp ENTER        &kp SPACE   &td1    &td5    &kp RCTRL   &kp DEL
 //                    +----------|-----------|----------|--------------------+    +-----------|-------|--------|-----------|---------+                      //
@@ -375,7 +349,7 @@
             bindings = <
 //-----------------------------------------------------------------+                        +------------------------------------------------------------------//
 //          |          |          |          |          |          |                        |          |          |          |          |          |           // 
-    &trans     &trans     &trans     &trans     &trans     &trans                              &trans     &trans     &trans     &trans     &trans     &w_backspace_word 0 BSPC
+    &trans     &trans     &trans     &trans     &trans     &trans                              &trans     &trans     &trans     &trans     &trans     &backspace_word LC(BSPC) BSPC
 //          |          |          |          |          |          |                        |          |          |          |          |          |           //
     &trans     &trans     &trans     &trans     &trans     &trans                              &trans     &trans     &trans     &trans     &trans     &trans
 //          |          |          |          |          |          +--------+     +---------|          |          |          |          |          |           // 
