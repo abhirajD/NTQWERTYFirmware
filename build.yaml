@@ -13,15 +13,15 @@
 #
 ---
 include:
-  - board: nice_nano_v2
+  - board: nice_nano/nrf52840/zmk
     shield: rolio_left nice_view
     snippet: studio-rpc-usb-uart
     cmake-args: -DCONFIG_ZMK_STUDIO=y -DEXTRA_CONF_FILE=../../config/rolio-nice_view.conf
     artifact-name: ntqwerty-nice_view-left
-  - board: nice_nano_v2
+  - board: nice_nano/nrf52840/zmk
     shield: rolio_right nice_view
     cmake-args: -DEXTRA_CONF_FILE=../../config/rolio-nice_view.conf
     artifact-name: ntqwerty-nice_view-right
-  - board: nice_nano_v2
+  - board: nice_nano/nrf52840/zmk
     shield: settings_reset
     artifact-name: ntqwerty-settings_reset
