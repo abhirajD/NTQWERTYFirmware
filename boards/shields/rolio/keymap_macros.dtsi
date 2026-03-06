@@ -16,24 +16,24 @@
             #binding-cells = <1>;
             bindings = <&bt BT_CLR>;
         };
-        // Utilities so that Studio's use of "df" looks nice
+        // Layer switching macros (using &to — not persistent across reboots)
         df_graphite: df_graphite {
-            display-name = "Set Connection Default Layer to Graphite";
+            display-name = "Switch to Graphite";
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&df GRAPHITE>;
+            bindings = <&to GRAPHITE>;
         };
         df_mac: df_mac {
-            display-name = "Set Connection Default Layer to MacOS";
+            display-name = "Switch to MacOS";
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&df MACOS>;
+            bindings = <&to MACOS>;
         };
         df_win: df_win {
-            display-name = "Set Connection Default Layer to Windows";
+            display-name = "Switch to Windows";
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&df WINDOWS>;
+            bindings = <&to WINDOWS>;
         };
         // Invoke MacOS dictation
         mac_talk: mac_talk {
