@@ -2,15 +2,10 @@ manifest:
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
-    - name: MickiusMousius
-      url-base: https://github.com/MickiusMousius
   projects:
     - name: zmk
       import: app/west.yml
       remote: zmkfirmware
-      revision: main
-    - name: zmk-ls0xxvcom-driver
-      remote: MickiusMousius
       revision: main
   self:
     path: config
