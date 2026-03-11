@@ -44,7 +44,7 @@
        &kp GRAVE      &kp B            &kp L           &kp D           &kp W           &kp Z     /*|                                 |*/  &kp F          &kp O           &kp U           &kp J           &kp SEMI       &backspace_word LA(BSPC) BSPC
        &kp TAB        &kp N            &kp R           &kp T           &kp S           &kp G     /*├─────────────╮     ╭─────────────┤*/  &kp Y          &kp H           &kp A           &kp E           &kp I          &kp SQT
        &kp LSHIFT     &kp Q            &kp X           &kp M           &kp C           &kp V           &kp F16             &kp F17        &kp K          &kp P           &kp COMMA       &kp DOT         &kp FSLH       &scw RSHIFT 0
-/* ╰───────────────┴───────────────┤*/ &mo KB_CONFIG   &kp LALT        &kp LCTRL       &kp LGUI   &lt M_FKEYS ENTER   &lt NUMPAD SPACE    &td1           &mt RGUI K_APP  &kp RCTRL       &kp DEL   //├───────────────┴───────────────╯
+/* ╰───────────────┴───────────────┤*/ &mo KB_CONFIG   &kp LALT        &kp LCTRL       &kp LGUI   &lt M_FKEYS ENTER   &lt NUMPAD SPACE    &td1           &mt RGUI K_APP  &kp RCTRL       &delete_word LA(DEL) DEL   //├───────────────┴───────────────╯
 //                                 ╰───────────────┴───────────────┴───────────────┴───────────────┴─────────────╯     ╰─────────────┴───────────────┴───────────────┴───────────────┴───────────────╯
             >;
         };
@@ -57,7 +57,7 @@
        &kp GRAVE      &kp Q            &kp W           &kp E           &kp R           &kp T     /*|                                 |*/  &kp Y          &kp U           &kp I           &kp O           &kp P          &backspace_word LA(BSPC) BSPC
        &kp TAB        &kp A            &kp S           &kp D           &kp F           &kp G     /*├─────────────╮     ╭─────────────┤*/  &kp H          &kp J           &kp K           &kp L           &kp SEMI       &kp SQT
        &kp LSHIFT     &kp Z            &kp X           &kp C           &kp V           &kp B           &kp F16             &kp F17        &kp N          &kp M           &kp COMMA       &kp DOT         &kp FSLH       &scw RSHIFT 0
-/* ╰───────────────┴───────────────┤*/ &mo KB_CONFIG   &kp LALT        &kp LCTRL       &kp LGUI   &lt M_FKEYS ENTER   &lt NUMPAD SPACE    &td1           &mt RGUI K_APP  &kp RCTRL       &kp DEL   //├───────────────┴───────────────╯
+/* ╰───────────────┴───────────────┤*/ &mo KB_CONFIG   &kp LALT        &kp LCTRL       &kp LGUI   &lt M_FKEYS ENTER   &lt NUMPAD SPACE    &td1           &mt RGUI K_APP  &kp RCTRL       &delete_word LA(DEL) DEL   //├───────────────┴───────────────╯
 //                                 ╰───────────────┴───────────────┴───────────────┴───────────────┴─────────────╯     ╰─────────────┴───────────────┴───────────────┴───────────────┴───────────────╯
             >;
         };
@@ -70,7 +70,7 @@
        &kp GRAVE      &kp Q            &kp W           &kp E           &kp R           &kp T     /*|                                 |*/  &kp Y          &kp U           &kp I           &kp O           &kp P          &backspace_word LC(BSPC) BSPC
        &kp TAB        &kp A            &kp S           &kp D           &kp F           &kp G     /*├─────────────╮     ╭─────────────┤*/  &kp H          &kp J           &kp K           &kp L           &kp SEMI       &kp SQT
        &kp LSHIFT     &kp Z            &kp X           &kp C           &kp V           &kp B           &kp F16             &kp F17        &kp N          &kp M           &kp COMMA       &kp DOT         &kp FSLH       &scw RSHIFT 0
-/* ╰───────────────┴───────────────┤*/ &mo KB_CONFIG   &kp LGUI        &kp LALT        &kp LCTRL   &lt W_FKEYS ENTER   &lt NUMPAD SPACE   &td2        &mt RCTRL K_APP    &kp RALT        &kp DEL   //├───────────────┴───────────────╯
+/* ╰───────────────┴───────────────┤*/ &mo KB_CONFIG   &kp LGUI        &kp LALT        &kp LCTRL   &lt W_FKEYS ENTER   &lt NUMPAD SPACE   &td2        &mt RCTRL K_APP    &kp RALT        &delete_word LC(DEL) DEL   //├───────────────┴───────────────╯
 //                                 ╰───────────────┴───────────────┴───────────────┴───────────────┴─────────────╯     ╰─────────────┴───────────────┴───────────────┴───────────────┴───────────────╯
             >;
         };

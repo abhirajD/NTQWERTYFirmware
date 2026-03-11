@@ -5,6 +5,7 @@ scale: 3.0         # pixels per layout unit (layout units: 100 = 1 key width)
 key_gap: 5         # pixel gap between key edges
 corner_radius: 10  # key corner rounding in pixels
 padding: 80        # pixels of padding around keyboard
+font_scale: 1.0    # multiply all font sizes by this (CLI: --font-scale 1.5)
 
 colors:
   background: "#0d1117"

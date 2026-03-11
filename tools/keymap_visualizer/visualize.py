@@ -57,41 +57,44 @@ KEYCODE_LABELS = {
     'LEFT_BRACE': '{', 'RIGHT_BRACE': '}', 'PIPE': '|',
     'EXCL': '!', 'AT': '@', 'HASH': '#', 'DLLR': '$', 'PRCNT': '%',
     'CARET': '^', 'AMPERSAND': '&', 'STAR': '*', 'LPAR': '(', 'RPAR': ')',
-    # Navigation
+    # Navigation — Unicode arrows
     'UP': '\u2191', 'DOWN': '\u2193', 'LEFT': '\u2190', 'RIGHT': '\u2192',
-    'PG_UP': 'PgUp', 'PG_DN': 'PgDn', 'HOME': 'Home', 'END': 'End',
-    # Modifiers
-    'LSHIFT': 'Shift', 'RSHIFT': 'Shift',
-    'LCTRL': 'Ctrl', 'RCTRL': 'Ctrl',
-    'LALT': 'Alt', 'RALT': 'Alt',
-    'LGUI': 'Cmd', 'RGUI': 'Cmd',
-    # Special keys
-    'TAB': 'Tab', 'ENTER': 'Enter', 'SPACE': 'Space', 'RET': 'Enter',
-    'BSPC': 'Bksp', 'DEL': 'Del', 'ESC': 'Esc', 'ESCAPE': 'Esc',
+    'PG_UP': '\u21DE', 'PG_DN': '\u21DF', 'HOME': '\u2912', 'END': '\u2913',
+    # Modifiers — Apple/Unicode symbols
+    'LSHIFT': '\u21E7', 'RSHIFT': '\u21E7',      # ⇧
+    'LCTRL': '\u2303', 'RCTRL': '\u2303',         # ⌃
+    'LALT': '\u2325', 'RALT': '\u2325',           # ⌥
+    'LGUI': '\u2318', 'RGUI': '\u2318',           # ⌘
+    # Special keys — Unicode symbols
+    'TAB': '\u21E5', 'ENTER': '\u21B5', 'SPACE': '\u2423', 'RET': '\u21B5',
+    'BSPC': '\u232B', 'DEL': '\u2326', 'ESC': '\u238B', 'ESCAPE': '\u238B',
+    'CAPS': '\u21EA',                               # ⇪
     # Function keys
     'F1': 'F1', 'F2': 'F2', 'F3': 'F3', 'F4': 'F4', 'F5': 'F5',
     'F6': 'F6', 'F7': 'F7', 'F8': 'F8', 'F9': 'F9', 'F10': 'F10',
     'F11': 'F11', 'F12': 'F12', 'F13': 'F13',
-    # Media
-    'C_VOL_UP': 'Vol+', 'C_VOL_DN': 'Vol-', 'C_MUTE': 'Mute',
-    'C_PREV': 'Prev', 'C_PP': 'Play', 'C_NEXT': 'Next',
-    'C_BRI_UP': 'Bri+', 'C_BRI_DN': 'Bri-',
+    # Media — Unicode symbols (avoiding emoji for font compatibility)
+    'C_VOL_UP': '\u266B+', 'C_VOL_DN': '\u266B-', 'C_MUTE': '\u266B\u00D7',
+    'C_PREV': '\u23EE', 'C_PP': '\u23EF', 'C_NEXT': '\u23ED',
+    'C_BRI_UP': '\u2600+', 'C_BRI_DN': '\u2600-',
     # Misc
-    'K_APP': 'Menu', 'KP_DOT': '.', 'KP_DIVIDE': '/',
-    'KP_MULTIPLY': '*', 'PSCRN': 'PrtSc', 'GLOBE': 'Globe',
+    'K_APP': '\u2630', 'KP_DOT': '.', 'KP_DIVIDE': '\u00F7',
+    'KP_MULTIPLY': '\u00D7', 'PSCRN': '\u2399', 'GLOBE': '\u2609',
     # Encoder placeholder keys
-    'F16': 'Enc', 'F17': 'Enc',
+    'F16': '\u27F3', 'F17': '\u27F3',             # ⟳ (rotation symbol)
 }
 
 LAYER_ABBREVS = {
     'GRAPHITE': 'GR', 'MACOS': 'Mac', 'WINDOWS': 'Win',
     'M_SYMBOLS': 'Sym', 'W_SYMBOLS': 'Sym', 'NUMPAD': 'Num',
-    'M_FKEYS': 'FK', 'W_FKEYS': 'FK', 'KB_CONFIG': 'Cfg',
+    'M_FKEYS': 'FK', 'W_FKEYS': 'FK', 'KB_CONFIG': '\u2699',
 }
 
 MOD_SYMBOLS = {
-    'LA': 'A-', 'RA': 'A-', 'LC': 'C-', 'RC': 'C-',
-    'LG': 'G-', 'RG': 'G-', 'LS': 'S-', 'RS': 'S-',
+    'LA': '\u2325', 'RA': '\u2325',   # ⌥
+    'LC': '\u2303', 'RC': '\u2303',   # ⌃
+    'LG': '\u2318', 'RG': '\u2318',   # ⌘
+    'LS': '\u21E7', 'RS': '\u21E7',   # ⇧
 }
 
 
@@ -172,15 +175,19 @@ def binding_to_label(binding):
 
     # Custom backspace hold-tap
     if behavior == '&backspace_word':
-        return 'Bksp\n(Word)'
+        return '\u232B\n(\u232BW)'
+
+    # Custom forward-delete hold-tap (symmetric to backspace_word)
+    if behavior == '&delete_word':
+        return '\u2326\n(\u2326W)'
 
     # Shift/capsword hold-tap
     if behavior == '&scw':
-        return 'Shift\n(CW)'
+        return '\u21E7\n(CW)'
 
     # Soft off (power)
     if behavior == '&soft_off':
-        return 'Power\nOff'
+        return '\u23FB'
 
     # Bluetooth key-press (hold=BT select, tap=key)
     if behavior == '&btkp':
@@ -269,14 +276,18 @@ def find_matching_brace(text, start):
 
 
 def parse_keymap(keymap_path):
-    """Parse a ZMK .keymap file and return list of layers with their bindings.
+    """Parse a ZMK .keymap file and return layers and layer define mappings.
 
-    Returns: list of dicts, each with keys:
-        - name: str (DTS node name like 'default_layer')
-        - display_name: str (from display-name property)
-        - bindings: list of str (one per key position)
+    Returns: (layers, layer_defines) where:
+        layers: list of dicts with keys: name, display_name, bindings
+        layer_defines: dict mapping define name → layer index (e.g., {'M_FKEYS': 6})
     """
     text = Path(keymap_path).read_text()
+
+    # Extract #define layer mappings (e.g., #define M_FKEYS 6)
+    layer_defines = {}
+    for m in re.finditer(r'#define\s+(\w+)\s+(\d+)', text):
+        layer_defines[m.group(1)] = int(m.group(2))
 
     # Find the keymap block using brace counting
     km_match = re.search(r'\bkeymap\s*\{', text)
@@ -302,7 +313,6 @@ def parse_keymap(keymap_path):
             break
 
         node_name = layer_match.group(1)
-        brace_start = pos + layer_match.start() + layer_match.end() - layer_match.start() - 1
         # Find the actual { position
         brace_start = pos + layer_match.end() - 1
         brace_end = find_matching_brace(keymap_body, brace_start)
@@ -328,7 +338,39 @@ def parse_keymap(keymap_path):
             'bindings': bindings,
         })
 
-    return layers
+    return layers, layer_defines
+
+
+def get_layer_trigger_map(bindings, layer_defines):
+    """For each key position, check if it activates a layer.
+
+    Returns: dict mapping key_index → target_layer_index (or None)
+    """
+    triggers = {}
+    for i, binding in enumerate(bindings):
+        parts = binding.strip().split()
+        if not parts:
+            continue
+        behavior = parts[0]
+        args = parts[1:]
+
+        target_layer = None
+        if behavior in ('&lt', '&mo', '&tog', '&to', '&sl'):
+            if args:
+                layer_name = args[0]
+                target_layer = layer_defines.get(layer_name)
+        # Macros that switch layers
+        elif behavior == '&df_graphite':
+            target_layer = layer_defines.get('GRAPHITE')
+        elif behavior == '&df_mac':
+            target_layer = layer_defines.get('MACOS')
+        elif behavior == '&df_win':
+            target_layer = layer_defines.get('WINDOWS')
+
+        if target_layer is not None:
+            triggers[i] = target_layer
+
+    return triggers
 
 
 def parse_bindings_block(text):
@@ -410,12 +452,19 @@ def text_anchor_pos(draw, text, font, position, key_bbox, padding=8):
     return x, y, anchor
 
 
-def render_keyboard(all_layers, layer_configs, config, output_path):
+def dim_color(color_rgb, bg_rgb, alpha=0.2):
+    """Blend a color toward the background at the given alpha (0-1)."""
+    return tuple(int(bg + alpha * (fg - bg)) for fg, bg in zip(color_rgb, bg_rgb))
+
+
+def render_keyboard(all_layers, layer_configs, config, output_path,
+                    layer_defines=None):
     """Render the keyboard with overlaid layers to a PNG file."""
-    scale = config.get('scale', 2.5)
-    padding = config.get('padding', 60)
-    key_gap = config.get('key_gap', 6)
-    corner_radius = config.get('corner_radius', 8)
+    scale = config.get('scale', 3.0)
+    padding = config.get('padding', 80)
+    key_gap = config.get('key_gap', 5)
+    corner_radius = config.get('corner_radius', 10)
+    font_scale = config.get('font_scale', 1.0)
     colors = config.get('colors', {})
 
     bg_color = hex_to_rgb(colors.get('background', '#0d1117'))
@@ -426,12 +475,15 @@ def render_keyboard(all_layers, layer_configs, config, output_path):
     title_color = hex_to_rgb(colors.get('title', '#e6edf3'))
     legend_color = hex_to_rgb(colors.get('legend_text', '#8b949e'))
 
+    # Key pixel size (used for ratio-based font sizing)
+    key_px = int(KEY_SIZE * scale)
+
     # Calculate image dimensions
     max_x = max(x for x, y in PHYSICAL_KEYS) + KEY_SIZE
     max_y = max(y for x, y in PHYSICAL_KEYS) + KEY_SIZE
 
-    title_height = 50
-    legend_height = 50
+    title_height = 60
+    legend_height = 60
     img_w = int(max_x * scale) + 2 * padding
     img_h = int(max_y * scale) + 2 * padding + title_height + legend_height
 
@@ -440,9 +492,27 @@ def render_keyboard(all_layers, layer_configs, config, output_path):
 
     # ─── Title ───
     title_text = config.get('title', 'ZMK Keymap')
-    title_font = load_font(28)
+    title_font = load_font(int(28 * font_scale))
     draw.text((img_w // 2, padding // 2 + 10), title_text,
               fill=title_color, font=title_font, anchor='mm')
+
+    # ─── Build layer trigger map for the center layer ───
+    # Find keys that activate layers displayed in this profile
+    layer_color_map = {}  # layer_index → color_rgb
+    for lc in layer_configs:
+        layer_color_map[lc['index']] = hex_to_rgb(lc['color'])
+
+    # Get trigger map from center layer (the primary visible layer)
+    trigger_tints = {}  # key_index → tint_color_rgb
+    center_layers = [lc for lc in layer_configs if lc['position'] == 'center']
+    if center_layers and layer_defines:
+        center_idx = center_layers[0]['index']
+        if center_idx < len(all_layers):
+            triggers = get_layer_trigger_map(
+                all_layers[center_idx]['bindings'], layer_defines)
+            for key_idx, target_layer in triggers.items():
+                if target_layer in layer_color_map:
+                    trigger_tints[key_idx] = layer_color_map[target_layer]
 
     # ─── Draw key caps ───
     key_bboxes = []
@@ -453,8 +523,17 @@ def render_keyboard(all_layers, layer_configs, config, output_path):
         y1 = int((ly + KEY_SIZE) * scale) + padding + title_height - key_gap
 
         is_encoder = i in ENCODER_POSITIONS
-        fill = enc_fill if is_encoder else key_fill
-        border = enc_border if is_encoder else key_border
+
+        # Determine key fill color (tinted if it's a layer trigger)
+        if i in trigger_tints:
+            fill = dim_color(trigger_tints[i], bg_color, alpha=0.25)
+            border = dim_color(trigger_tints[i], bg_color, alpha=0.5)
+        elif is_encoder:
+            fill = enc_fill
+            border = enc_border
+        else:
+            fill = key_fill
+            border = key_border
 
         draw_rounded_rect(draw, (x0, y0, x1, y1), corner_radius,
                           fill=fill, outline=border, width=2)
@@ -465,7 +544,16 @@ def render_keyboard(all_layers, layer_configs, config, output_path):
         layer_idx = lc['index']
         position = lc['position']
         color = hex_to_rgb(lc['color'])
-        font_size = lc.get('font_size', 12)
+
+        # Ratio-based font sizing: font_size is relative to key pixel size
+        # Default ratios: center=0.06, corner=0.037
+        if 'font_size' in lc:
+            font_size = int(lc['font_size'] * font_scale)
+        elif position == 'center':
+            font_size = int(key_px * 0.06 * font_scale)
+        else:
+            font_size = int(key_px * 0.037 * font_scale)
+
         font = load_font(font_size)
 
         if layer_idx >= len(all_layers):
@@ -494,8 +582,8 @@ def render_keyboard(all_layers, layer_configs, config, output_path):
             draw.text((x, y), label, fill=color, font=font, anchor=anchor)
 
     # ─── Legend ───
-    legend_font = load_font(15)
-    legend_y = img_h - legend_height + 18
+    legend_font = load_font(int(15 * font_scale))
+    legend_y = img_h - legend_height + 20
     legend_x = padding
 
     for lc in layer_configs:
@@ -503,25 +591,26 @@ def render_keyboard(all_layers, layer_configs, config, output_path):
         name = lc['name']
 
         # Draw colored dot
-        dot_r = 6
+        dot_r = 7
         draw.ellipse((legend_x, legend_y - dot_r, legend_x + 2 * dot_r,
                        legend_y + dot_r), fill=color)
 
         # Draw label
-        draw.text((legend_x + 2 * dot_r + 6, legend_y), name,
+        draw.text((legend_x + 2 * dot_r + 8, legend_y), name,
                   fill=legend_color, font=legend_font, anchor='lm')
 
         # Advance x
         text_bbox = legend_font.getbbox(name)
         text_w = text_bbox[2] - text_bbox[0] if text_bbox else len(name) * 8
-        legend_x += 2 * dot_r + 6 + text_w + 24
+        legend_x += 2 * dot_r + 8 + text_w + 30
 
     # Save
     img.save(str(output_path), 'PNG')
     return output_path
 
 
-def render_single_layer(all_layers, layer_idx, layer_name, config, output_path):
+def render_single_layer(all_layers, layer_idx, layer_name, config, output_path,
+                        layer_defines=None):
     """Render a single layer as a standalone image."""
     lc = {
         'name': layer_name,
@@ -532,7 +621,8 @@ def render_single_layer(all_layers, layer_idx, layer_name, config, output_path):
     }
     single_config = dict(config)
     single_config['title'] = f"{config.get('title', 'Keymap')} — {layer_name}"
-    render_keyboard(all_layers, [lc], single_config, output_path)
+    render_keyboard(all_layers, [lc], single_config, output_path,
+                    layer_defines=layer_defines)
 
 
 def main():
@@ -548,6 +638,8 @@ def main():
                         help='Output path (file or directory for --all-layers)')
     parser.add_argument('--all-layers', action='store_true',
                         help='Render each layer as a separate image')
+    parser.add_argument('--font-scale', type=float, default=None,
+                        help='Multiply all font sizes by this factor')
     args = parser.parse_args()
 
     # Find config
@@ -559,6 +651,10 @@ def main():
 
     with open(config_path) as f:
         config = yaml.safe_load(f)
+
+    # CLI overrides
+    if args.font_scale:
+        config['font_scale'] = args.font_scale
 
     # Find keymap
     if args.keymap:
@@ -573,7 +669,7 @@ def main():
         sys.exit(1)
 
     print(f"Parsing keymap: {keymap_path}")
-    all_layers = parse_keymap(keymap_path)
+    all_layers, layer_defines = parse_keymap(keymap_path)
     print(f"Found {len(all_layers)} layers: {', '.join(l['display_name'] for l in all_layers)}")
 
     if args.all_layers:
@@ -583,7 +679,8 @@ def main():
 
         for i, layer in enumerate(all_layers):
             out_file = out_dir / f"layer_{i}_{layer['name']}.png"
-            render_single_layer(all_layers, i, layer['display_name'], config, out_file)
+            render_single_layer(all_layers, i, layer['display_name'], config,
+                                out_file, layer_defines=layer_defines)
             print(f"  Rendered: {out_file}")
 
         print(f"\nAll {len(all_layers)} layers saved to {out_dir}/")
@@ -605,7 +702,8 @@ def main():
             script_dir / f"keymap_{profile_name}.png"
 
         print(f"Rendering profile: {profile_name} ({profile.get('description', '')})")
-        render_keyboard(all_layers, layer_configs, config, out_file)
+        render_keyboard(all_layers, layer_configs, config, out_file,
+                        layer_defines=layer_defines)
         print(f"Saved: {out_file}")
 
 
