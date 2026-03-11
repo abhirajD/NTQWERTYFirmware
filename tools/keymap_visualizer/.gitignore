@@ -1,3 +1,6 @@
 # Generated output images
 *.png
 layers/
+
+# Python venv
+.venv/

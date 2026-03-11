@@ -20,7 +20,8 @@ title: "NTQWERTY Keymap — Rolio 46"
 
 # Layer display configuration
 # position: center | tl (top-left) | tr (top-right) | bl (bottom-left) | br (bottom-right)
-# skip_transparent: if true, don't show anything for &trans keys (default: true)
+# font_ratio: text size relative to key size (0.18 = 18% of key pixel width)
+#   defaults: center=0.18, corner=0.085. Override per-layer.
 
 profiles:
   mac:
@@ -30,27 +31,22 @@ profiles:
         index: 0
         position: center
         color: "#e6edf3"
-        font_size: 18
       - name: "F-Keys"
         index: 6
         position: tl
         color: "#58a6ff"
-        font_size: 11
       - name: Symbols
         index: 3
         position: tr
         color: "#d29922"
-        font_size: 11
       - name: Numpad
         index: 5
         position: bl
         color: "#3fb950"
-        font_size: 11
       - name: Settings
         index: 8
         position: br
         color: "#f78166"
-        font_size: 11
 
   win:
     description: "Windows + Win layers"
@@ -59,27 +55,22 @@ profiles:
         index: 2
         position: center
         color: "#e6edf3"
-        font_size: 14
       - name: "F-Keys (Win)"
         index: 7
         position: tl
         color: "#58a6ff"
-        font_size: 9
       - name: "Symbols (Win)"
         index: 4
         position: tr
         color: "#d29922"
-        font_size: 9
       - name: Numpad
         index: 5
         position: bl
         color: "#3fb950"
-        font_size: 9
       - name: Settings
         index: 8
         position: br
         color: "#f78166"
-        font_size: 9
 
   all_layers:
     description: "All 9 layers in separate images"
@@ -88,47 +79,38 @@ profiles:
         index: 0
         position: center
         color: "#e6edf3"
-        font_size: 14
       - name: "QWERTY (Mac)"
         index: 1
         position: center
         color: "#c9d1d9"
-        font_size: 14
       - name: Windows
         index: 2
         position: center
         color: "#c9d1d9"
-        font_size: 14
       - name: "Symbols (Mac)"
         index: 3
         position: center
         color: "#d29922"
-        font_size: 14
       - name: "Symbols (Win)"
         index: 4
         position: center
         color: "#d29922"
-        font_size: 14
       - name: Numpad
         index: 5
         position: center
         color: "#3fb950"
-        font_size: 14
       - name: "F-Keys (Mac)"
         index: 6
         position: center
         color: "#58a6ff"
-        font_size: 14
       - name: "F-Keys (Win)"
         index: 7
         position: center
         color: "#58a6ff"
-        font_size: 14
       - name: Settings
         index: 8
         position: center
         color: "#f78166"
-        font_size: 14
 
 # Default profile to render
 default_profile: mac

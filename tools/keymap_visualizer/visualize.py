@@ -80,8 +80,8 @@ KEYCODE_LABELS = {
     # Misc
     'K_APP': '\u2630', 'KP_DOT': '.', 'KP_DIVIDE': '\u00F7',
     'KP_MULTIPLY': '\u00D7', 'PSCRN': '\u2399', 'GLOBE': '\u2609',
-    # Encoder placeholder keys
-    'F16': '\u27F3', 'F17': '\u27F3',             # ⟳ (rotation symbol)
+    # Encoder placeholder keys — use simple text instead of Unicode
+    'F16': 'Enc', 'F17': 'Enc',
 }
 
 LAYER_ABBREVS = {
@@ -398,11 +398,13 @@ def parse_bindings_block(text):
 # ─── Renderer ───
 
 def load_font(size):
-    """Try to load a good monospace font, falling back gracefully."""
+    """Try to load a font with good Unicode coverage, falling back gracefully."""
     font_paths = [
-        '/System/Library/Fonts/SFNSMono.ttf',
+        # Menlo has excellent Unicode symbol coverage (media, arrows, etc.)
         '/System/Library/Fonts/Menlo.ttc',
-        '/Library/Fonts/SF-Mono-Regular.otf',
+        '/System/Library/Fonts/SFNS.ttf',
+        '/System/Library/Fonts/Supplemental/Apple Symbols.ttf',
+        '/System/Library/Fonts/SFNSMono.ttf',
         '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',
         '/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf',
     ]
@@ -482,8 +484,8 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
     max_x = max(x for x, y in PHYSICAL_KEYS) + KEY_SIZE
     max_y = max(y for x, y in PHYSICAL_KEYS) + KEY_SIZE
 
-    title_height = 60
-    legend_height = 60
+    title_height = 70
+    legend_height = 70
     img_w = int(max_x * scale) + 2 * padding
     img_h = int(max_y * scale) + 2 * padding + title_height + legend_height
 
@@ -492,7 +494,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
 
     # ─── Title ───
     title_text = config.get('title', 'ZMK Keymap')
-    title_font = load_font(int(28 * font_scale))
+    title_font = load_font(int(32 * font_scale))
     draw.text((img_w // 2, padding // 2 + 10), title_text,
               fill=title_color, font=title_font, anchor='mm')
 
@@ -545,14 +547,16 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         position = lc['position']
         color = hex_to_rgb(lc['color'])
 
-        # Ratio-based font sizing: font_size is relative to key pixel size
-        # Default ratios: center=0.06, corner=0.037
-        if 'font_size' in lc:
+        # Ratio-based font sizing: relative to key pixel size
+        # Default ratios: center=0.18, corner=0.085
+        if 'font_ratio' in lc:
+            font_size = max(10, int(key_px * lc['font_ratio'] * font_scale))
+        elif 'font_size' in lc:
             font_size = int(lc['font_size'] * font_scale)
         elif position == 'center':
-            font_size = int(key_px * 0.06 * font_scale)
+            font_size = max(10, int(key_px * 0.18 * font_scale))
         else:
-            font_size = int(key_px * 0.037 * font_scale)
+            font_size = max(10, int(key_px * 0.085 * font_scale))
 
         font = load_font(font_size)
 
@@ -582,8 +586,8 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
             draw.text((x, y), label, fill=color, font=font, anchor=anchor)
 
     # ─── Legend ───
-    legend_font = load_font(int(15 * font_scale))
-    legend_y = img_h - legend_height + 20
+    legend_font = load_font(int(18 * font_scale))
+    legend_y = img_h - legend_height + 24
     legend_x = padding
 
     for lc in layer_configs:
