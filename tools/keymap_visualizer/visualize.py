@@ -97,9 +97,6 @@ MOD_SYMBOLS = {
     'LS': '\u21E7', 'RS': '\u21E7',   # ⇧
 }
 
-# Inline icon placeholder — replaced with drawn vector icons during rendering
-BT_ICON = '\ue000'   # Bluetooth rune (drawn programmatically)
-
 # Semantic shortcuts — replace verbose modifier chains with concise symbols
 SEMANTIC_SHORTCUTS = {
     # Mac screenshot variants → ⎙ (print screen symbol)
@@ -219,20 +216,20 @@ def binding_to_label(binding):
     if behavior == '&soft_off':
         return '\u23FB'
 
-    # Bluetooth key-press (hold=BT select, tap=key) — BT icon
+    # Bluetooth key-press (hold=BT select, tap=key)
     if behavior == '&btkp':
         profile = args[0] if args else '?'
         key = keycode_label(args[1]) if len(args) > 1 else '?'
-        return f"{key}\n{BT_ICON}{profile}"
+        return f"{key}\n\uf293{profile}"
 
     # USB/Output toggle with escape
     if behavior == '&usb_tog':
         key = keycode_label(args[1]) if len(args) > 1 else 'USB'
         return f"{key}\nUSB"
 
-    # BT clear key-press — BT icon + ✗ = clear
+    # BT clear key-press
     if behavior == '&btclr_kp':
-        return f'{BT_ICON}\n\u2717'
+        return '\uf293\n\u2717'
 
     # Backlight — ◐ = toggle (half-filled), ☀ = brightness levels
     if behavior == '&bl':
@@ -246,9 +243,9 @@ def binding_to_label(binding):
             return f'\u2600{val}'
         return bl_labels.get(cmd, f'BL {cmd}')
 
-    # Output toggle — ⚡ = USB, BT icon, ⇌ = switch between
+    # Output toggle — Nerd Font: USB  ⇌  BT 
     if behavior == '&out':
-        return f'\u26A1\u21CC{BT_ICON}'
+        return '\uf287\u21CC\uf293'
 
     # Mouse key press
     if behavior == '&mkp':
@@ -428,32 +425,39 @@ def parse_bindings_block(text):
 # ─── Renderer ───
 
 class FontChain:
-    """Multi-font fallback chain for complete Unicode coverage.
+    """Multi-font fallback chain with per-character font selection.
 
-    Loads fonts in priority order and selects the best font per label,
-    ensuring symbols like ⏮⏯⏭ render correctly even when no single
-    font covers all characters.
+    Loads fonts in priority order and can render mixed-font labels
+    (e.g., regular text + Nerd Font icons in one string).
 
     Font priority: NotoSansMono (text) → NotoSansSymbols (tech) →
-                   NotoSansSymbols2 (media/modifiers) → Menlo (system fallback)
+                   NotoSansSymbols2 (media/modifiers) → Nerd Font Symbols
+                   (BT, USB, dev icons) → Menlo (system fallback)
     """
 
-    _tofu_cache = {}  # (font_path, char) → bool
+    _tofu_cache = {}  # (font_path, size, char) → bool
+
+    # Codepoint ranges that must use Nerd Font Symbols (Private Use Area)
+    _NERD_RANGES = [range(0xE000, 0xF900), range(0xF0000, 0x100000)]
 
     def __init__(self, size):
         self.size = size
         self.fonts = []  # [(font_obj, path_str), ...]
+        self._nerd_font = None  # direct ref for fast PUA lookups
         self._load_fonts(size)
 
     def _load_fonts(self, size):
         script_dir = Path(__file__).parent
         font_dir = script_dir / 'fonts'
 
-        # Priority order: bundled Noto family first, then system fonts
+        nerd_path = font_dir / 'SymbolsNerdFontMono-Regular.ttf'
+
+        # Priority order: bundled Noto family, Nerd Fonts, then system fonts
         candidates = [
             font_dir / 'NotoSansMono.ttf',
             font_dir / 'NotoSansSymbols.ttf',
             font_dir / 'NotoSansSymbols2-Regular.ttf',
+            nerd_path,
             Path('/System/Library/Fonts/Menlo.ttc'),
             Path('/System/Library/Fonts/SFNS.ttf'),
             Path('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'),
@@ -462,6 +466,8 @@ class FontChain:
             try:
                 font = ImageFont.truetype(str(fp), size)
                 self.fonts.append((font, str(fp)))
+                if fp == nerd_path:
+                    self._nerd_font = font
             except (IOError, OSError):
                 continue
         if not self.fonts:
@@ -485,8 +491,20 @@ class FontChain:
         FontChain._tofu_cache[cache_key] = is_tofu
         return is_tofu
 
+    def _best_font_for_char(self, char):
+        """Return the best font for a single character."""
+        cp = ord(char)
+        # Fast path: PUA codepoints → Nerd Font
+        if self._nerd_font and any(cp in r for r in self._NERD_RANGES):
+            return self._nerd_font
+        # Normal chain lookup
+        for font, fpath in self.fonts:
+            if not self._is_tofu(font, fpath, char):
+                return font
+        return self.fonts[0][0]
+
     def select(self, text):
-        """Return the best font for the given label text.
+        """Return the best single font for the given label text.
 
         Picks the first font that can render ALL characters without tofu.
         Falls back to font with best character coverage.
@@ -505,6 +523,60 @@ class FontChain:
                 best_count = count
                 best_font = font
         return best_font
+
+    def render(self, draw, pos, text, fill, anchor='mm'):
+        """Draw text with per-character font fallback.
+
+        Groups consecutive characters by their best font and draws each
+        group sequentially. Handles all PIL anchor types (mm, la, ra, etc.).
+        """
+        visible = [ch for ch in text if ch not in (' ', '\n')]
+        if not visible:
+            return
+
+        # Fast path: single font covers everything
+        single = self.select(text)
+        all_ok = all(
+            not self._is_tofu(single, '', ch) for ch in visible
+        )
+        if all_ok:
+            draw.text(pos, text, fill=fill, font=single, anchor=anchor)
+            return
+
+        # Slow path: group by font, draw per-group
+        groups = []  # [(substring, font), ...]
+        cur_chars, cur_font = [], None
+        for ch in text:
+            if ch in (' ', '\n'):
+                cur_chars.append(ch)
+                continue
+            best = self._best_font_for_char(ch)
+            if best is not cur_font and cur_chars:
+                groups.append((''.join(cur_chars), cur_font or best))
+                cur_chars = []
+            cur_font = best
+            cur_chars.append(ch)
+        if cur_chars:
+            groups.append((''.join(cur_chars), cur_font or self.fonts[0][0]))
+
+        # Calculate total width
+        total_w = sum(f.getlength(s) for s, f in groups)
+
+        # Resolve anchor to starting x
+        x, y = pos
+        h_anchor = anchor[0]  # l, m, r
+        v_anchor = anchor[1] if len(anchor) > 1 else 'm'  # a, m, d
+        if h_anchor == 'm':
+            cur_x = x - total_w / 2
+        elif h_anchor == 'r':
+            cur_x = x - total_w
+        else:
+            cur_x = x
+
+        for substring, font in groups:
+            draw.text((cur_x, y), substring, fill=fill, font=font,
+                      anchor=f'l{v_anchor}')
+            cur_x += font.getlength(substring)
 
     @property
     def primary(self):
@@ -554,67 +626,6 @@ def text_anchor_pos(draw, text, font, position, key_bbox, padding=8):
 def dim_color(color_rgb, bg_rgb, alpha=0.2):
     """Blend a color toward the background at the given alpha (0-1)."""
     return tuple(int(bg + alpha * (fg - bg)) for fg, bg in zip(color_rgb, bg_rgb))
-
-
-def draw_bt_icon(draw, cx, cy, size, color):
-    """Draw the Bluetooth rune logo at (cx, cy) with given size and color."""
-    h = size
-    w = size * 0.5
-    lw = max(1, round(size / 10))
-
-    top = (cx, cy - h / 2)
-    bottom = (cx, cy + h / 2)
-    mid_l = (cx - w, cy)
-    tr = (cx + w, cy - h / 4)
-    br = (cx + w, cy + h / 4)
-    center = (cx, cy)
-
-    draw.line([top, bottom], fill=color, width=lw)
-    draw.line([mid_l, tr], fill=color, width=lw)
-    draw.line([tr, center], fill=color, width=lw)
-    draw.line([mid_l, br], fill=color, width=lw)
-    draw.line([br, center], fill=color, width=lw)
-
-
-def _render_label_with_icons(draw, text, x, y, anchor, font, font_size, color):
-    """Draw text, replacing BT_ICON placeholders with drawn Bluetooth icons."""
-    if BT_ICON not in text:
-        draw.text((x, y), text, fill=color, font=font, anchor=anchor)
-        return
-
-    # Split text around BT_ICON markers and draw piece by piece
-    parts = text.split(BT_ICON)
-    icon_size = int(font_size * 0.9)
-
-    # Calculate total width: text parts + icon slots
-    text_widths = [font.getlength(p) for p in parts]
-    icon_w = icon_size * 0.6
-    n_icons = len(parts) - 1
-    total_w = sum(text_widths) + n_icons * icon_w
-
-    # Determine starting x based on anchor
-    if anchor and anchor[1] == 'm':  # horizontally centered
-        cur_x = x - total_w / 2
-    elif anchor and anchor[1] == 'r':  # right-aligned
-        cur_x = x - total_w
-    else:
-        cur_x = x
-
-    # Vertical center based on anchor
-    if anchor and anchor[0] == 'm':  # vertically centered
-        text_y = y
-        icon_cy = y
-    else:
-        text_y = y
-        icon_cy = y - font_size * 0.35
-
-    for i, part in enumerate(parts):
-        if part:
-            draw.text((cur_x, text_y), part, fill=color, font=font, anchor='lm')
-            cur_x += font.getlength(part)
-        if i < n_icons:
-            draw_bt_icon(draw, cur_x + icon_w / 2, icon_cy, icon_size, color)
-            cur_x += icon_w
 
 
 def render_keyboard(all_layers, layer_configs, config, output_path,
@@ -773,23 +784,19 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
                 cx = bx0 + (bx1 - bx0) // 2
 
                 # Primary: shifted up, full size, full color
-                clean_primary = primary_label.replace(BT_ICON, '')
-                primary_font = font_chain.select(clean_primary or primary_label)
                 primary_y = by0 + int(kh * 0.38)
-                _render_label_with_icons(draw, primary_label, cx, primary_y,
-                                         'mm', primary_font, font_size, color)
+                font_chain.render(draw, (cx, primary_y), primary_label,
+                                  fill=color, anchor='mm')
 
                 # Secondary: shifted down, ~55% size, in pill badge
                 sec_size = max(10, int(font_size * 0.55))
                 sec_chain = load_font(sec_size)
-                clean_secondary = secondary_label.replace(BT_ICON, '')
-                sec_font = sec_chain.select(clean_secondary or secondary_label)
+                sec_font = sec_chain.select(secondary_label)
                 sec_color = dim_color(color, bg_color, alpha=0.55)
                 sec_y = by0 + int(kh * 0.72)
 
                 # Draw pill background behind secondary text
-                icon_extra = int(sec_size * 0.6) * secondary_label.count(BT_ICON)
-                tw = int(sec_font.getlength(clean_secondary)) + icon_extra
+                tw = int(sec_font.getlength(secondary_label))
                 pill_pad = max(4, sec_size // 3)
                 pill_h = sec_size + pill_pad
                 pill_w = tw + pill_pad * 2
@@ -801,23 +808,21 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
                     fill=pill_color
                 )
 
-                _render_label_with_icons(draw, secondary_label, cx, sec_y,
-                                         'mm', sec_font, sec_size, sec_color)
+                sec_chain.render(draw, (cx, sec_y), secondary_label,
+                                 fill=sec_color, anchor='mm')
                 continue
 
             # For multi-line labels in corner positions, take only first line
             if position != 'center' and '\n' in label:
                 label = label.split('\n')[0]
 
-            # Truncate long labels for corner positions (ignore icon markers)
-            clean_label = label.replace(BT_ICON, '')
-            if position != 'center' and len(clean_label) > 8:
-                clean_label = clean_label[:7] + '..'
-                label = clean_label  # drop icons if truncating
+            # Truncate long labels for corner positions
+            if position != 'center' and len(label) > 8:
+                label = label[:7] + '..'
 
-            font = font_chain.select(clean_label or label)
-            x, y, anchor = text_anchor_pos(draw, clean_label, font, position, bbox)
-            _render_label_with_icons(draw, label, x, y, anchor, font, font_size, color)
+            font = font_chain.select(label)
+            x, y, anchor = text_anchor_pos(draw, label, font, position, bbox)
+            font_chain.render(draw, (x, y), label, fill=color, anchor=anchor)
 
     # ─── Legend ───
     POSITION_HINTS = {
