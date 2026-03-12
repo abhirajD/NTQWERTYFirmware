@@ -208,9 +208,9 @@ def edit_text_sizes(config):
     console.print(f"  Corner text  [green]{k:.0%}[/] of key  {bar_graph(k, 0.03, 0.18)}")
     console.print(f"  All text     [green]×{fs}[/]          {bar_graph(fs, 0.5, 3.0)}")
     console.print()
-    console.print("[dim]  Ratios control text size as a % of key size.")
-    console.print("  Bigger center = bigger main label. Bigger corner = bigger layer overlays.")
-    console.print("  'All text' is a global multiplier on top of both.[/]")
+    console.print("[dim]  Ratios control text size as a % of key size.[/]")
+    console.print("[dim]  Bigger center = bigger main label. Bigger corner = bigger layer overlays.[/]")
+    console.print("[dim]  'All text' is a global multiplier on top of both.[/]")
     console.print()
 
     c = _prompt_float(
