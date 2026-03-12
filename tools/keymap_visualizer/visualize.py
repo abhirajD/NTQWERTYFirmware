@@ -670,15 +670,17 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         color = hex_to_rgb(lc['color'])
 
         # Ratio-based font sizing: relative to key pixel size
-        # Default ratios: center=0.18, corner=0.085
+        # Hierarchy: per-layer font_ratio > global center/corner ratio > hardcoded defaults
+        center_ratio = config.get('center_font_ratio', 0.18)
+        corner_ratio = config.get('corner_font_ratio', 0.085)
         if 'font_ratio' in lc:
             font_size = max(10, int(key_px * lc['font_ratio'] * font_scale))
         elif 'font_size' in lc:
             font_size = int(lc['font_size'] * font_scale)
         elif position == 'center':
-            font_size = max(10, int(key_px * 0.18 * font_scale))
+            font_size = max(10, int(key_px * center_ratio * font_scale))
         else:
-            font_size = max(10, int(key_px * 0.085 * font_scale))
+            font_size = max(10, int(key_px * corner_ratio * font_scale))
 
         font_chain = load_font(font_size)
 
