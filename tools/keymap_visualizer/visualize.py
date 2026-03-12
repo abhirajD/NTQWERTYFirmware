@@ -289,6 +289,56 @@ def binding_to_label(binding):
 
 # ─── Keymap Parser ───
 
+# Labels for custom sensor-rotate behaviors (0-cell: no args in sensor-bindings)
+SENSOR_BEHAVIOR_LABELS = {
+    '&bri_adjust': '\uf0eb\u00b1',       # 💡± keyboard backlight
+    '&scroll_up_down': '\uf245\u2195',    # 🖱↕ mouse scroll
+    '&mac_vol': '\uf028\u00b1',           # 🔊± volume (fine)
+}
+
+
+def sensor_binding_label(tokens):
+    """Convert a sensor binding (list of tokens) to a rotation label.
+
+    For &inc_dec_kp, uses the CW/CCW keycodes.
+    For custom behaviors (0-cell), uses SENSOR_BEHAVIOR_LABELS lookup.
+    """
+    if not tokens:
+        return ''
+    behavior = tokens[0]
+    if behavior == '&inc_dec_kp' and len(tokens) >= 3:
+        cw_label = keycode_label(tokens[1])
+        ccw_label = keycode_label(tokens[2])
+        # If CW/CCW are a natural pair, show compact form
+        return f'{cw_label}\n{ccw_label}'
+    return SENSOR_BEHAVIOR_LABELS.get(behavior, behavior.lstrip('&'))
+
+
+def parse_sensor_bindings(raw):
+    """Parse the content inside <...> of a sensor-bindings property.
+
+    Returns a list of sensor binding groups, one per encoder.
+    Each group is a list of tokens (behavior + args).
+
+    Formats:
+        <&inc_dec_kp UP DOWN &inc_dec_kp LEFT RIGHT>  → 2 groups (2-cell each)
+        <&mac_vol &scroll_up_down>                      → 2 groups (0-cell each)
+        <&bri_adjust &inc_dec_kp C_BRI_UP C_BRI_DN>    → 2 groups (mixed)
+    """
+    tokens = raw.split()
+    groups = []
+    current = []
+    for tok in tokens:
+        if tok.startswith('&') and current:
+            groups.append(current)
+            current = [tok]
+        else:
+            current.append(tok)
+    if current:
+        groups.append(current)
+    return groups
+
+
 def find_matching_brace(text, start):
     """Find the closing brace matching the opening brace at 'start'."""
     depth = 0
@@ -358,11 +408,19 @@ def parse_keymap(keymap_path):
         dn_match = re.search(r'display-name\s*=\s*"([^"]*)"', block)
         display_name = dn_match.group(1) if dn_match else node_name
 
+        # Extract sensor-bindings (encoder rotation)
+        sensor_match = re.search(
+            r'sensor-bindings\s*=\s*<(.*?)>', block, re.DOTALL)
+        sensor_bindings = []
+        if sensor_match:
+            sensor_bindings = parse_sensor_bindings(sensor_match.group(1))
+
         bindings = parse_bindings_block(bindings_match.group(1))
         layers.append({
             'name': node_name,
             'display_name': display_name,
             'bindings': bindings,
+            'sensor_bindings': sensor_bindings,
         })
 
     return layers, layer_defines
@@ -769,12 +827,24 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
             continue
 
         layer_bindings = all_layers[layer_idx]['bindings']
+        sensor_bins = all_layers[layer_idx].get('sensor_bindings', [])
+
+        # Build encoder rotation labels: pos 30 = left encoder, pos 31 = right
+        encoder_labels = {}
+        encoder_sensor_map = {30: 0, 31: 1}  # position → sensor index
+        for enc_pos, sens_idx in encoder_sensor_map.items():
+            if sens_idx < len(sensor_bins):
+                encoder_labels[enc_pos] = sensor_binding_label(sensor_bins[sens_idx])
 
         for key_idx, bbox in enumerate(key_bboxes):
             if key_idx >= len(layer_bindings):
                 continue
 
-            label = binding_to_label(layer_bindings[key_idx])
+            # For encoder positions, prefer rotation label over click binding
+            if key_idx in encoder_labels:
+                label = encoder_labels[key_idx]
+            else:
+                label = binding_to_label(layer_bindings[key_idx])
             if not label:
                 continue
 
