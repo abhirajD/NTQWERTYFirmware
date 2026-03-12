@@ -229,7 +229,7 @@ def binding_to_label(binding):
 
     # BT clear key-press
     if behavior == '&btclr_kp':
-        return 'BT\nClear'
+        return 'BT\n\u2717'  # ✗ = clear/delete
 
     # Backlight — ◐ = toggle (half-filled), ☀ = brightness levels
     if behavior == '&bl':
@@ -243,14 +243,14 @@ def binding_to_label(binding):
             return f'\u2600{val}'
         return bl_labels.get(cmd, f'BL {cmd}')
 
-    # Output toggle
+    # Output toggle — ⇌ = bidirectional switch (USB ↔ BT)
     if behavior == '&out':
-        return 'Out Tog'
+        return '\u21CC'
 
     # Mouse key press
     if behavior == '&mkp':
         key = args[0] if args else '?'
-        labels = {'LCLK': 'Click', 'RCLK': 'RClick', 'MCLK': 'MClick'}
+        labels = {'LCLK': '\u25C9', 'RCLK': 'R\u25C9', 'MCLK': 'M\u25C9'}  # ◉ = click
         return labels.get(key, key)
 
     # Tap-dances: Symbols/Numpad dual-function
@@ -262,9 +262,9 @@ def binding_to_label(binding):
     macro_labels = {
         '&mac_talk': '\U0001F399',  # 🎙 studio microphone
         '&mac_cap_app': 'Cap\nApp',
-        '&df_graphite': 'Set\nGR',
-        '&df_mac': 'Set\nMac',
-        '&df_win': 'Set\nWin',
+        '&df_graphite': '\u2302\nGR',    # ⌂ = home/default layer
+        '&df_mac': '\u2302\nMac',
+        '&df_win': '\u2302\nWin',
         '&kpss': 'KP',
         '&btsel': 'BT Sel',
     }
