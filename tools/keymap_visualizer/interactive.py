@@ -276,67 +276,86 @@ def edit_profile_layers(config, profile_name):
 
 def main_menu():
     config = load_config()
+    default_profile = config.get("default_profile", "mac")
 
     console.print(
         Panel(
             "[bold cyan]NTQWERTY Keymap Visualizer[/]\n"
-            "[dim]Interactive configuration & rendering[/]",
+            "[dim]Rolio 46-key split keyboard[/]",
             box=box.DOUBLE,
         )
     )
 
-    while True:
-        console.print()
-        show_current_config(config)
-        profile_names = show_profiles(config)
+    # Auto-generate on first launch
+    console.print(
+        f"\n  Generating [bold]{default_profile}[/] layout with current settings...\n"
+    )
+    render_and_open(config, profile_name=default_profile)
 
-        console.print("\n[bold]Actions:[/]")
-        console.print("  [cyan]1[/]  Render profile")
-        console.print("  [cyan]2[/]  Render all layers (separate images)")
-        console.print("  [cyan]3[/]  Edit global settings (scale, fonts, padding)")
-        console.print("  [cyan]4[/]  Edit colors")
-        console.print("  [cyan]5[/]  Edit profile layers")
-        console.print("  [cyan]6[/]  Set default profile")
+    while True:
+        profile_names = list(config.get("profiles", {}).keys())
+
+        console.print("\n[bold]What next?[/]\n")
+        console.print(
+            "  [cyan]g[/]  Generate image"
+            "      [dim]— pick a profile or render all layers separately[/]"
+        )
+        console.print(
+            "  [cyan]s[/]  Settings"
+            "           [dim]— image size, font size, spacing, colors[/]"
+        )
+        console.print(
+            "  [cyan]p[/]  Profiles"
+            "           [dim]— edit which layers appear and where on each key[/]"
+        )
+        console.print(
+            "  [cyan]v[/]  View config"
+            "        [dim]— show current settings and profiles[/]"
+        )
         console.print("  [cyan]q[/]  Quit")
 
-        choice = Prompt.ask("\nChoice", choices=["1", "2", "3", "4", "5", "6", "q"])
+        choice = Prompt.ask(
+            "\nChoice", choices=["g", "s", "p", "v", "q"], default="g"
+        )
 
         if choice == "q":
             console.print("[dim]Bye![/]")
             break
 
-        elif choice == "1":
-            name = Prompt.ask(
-                "Profile",
-                choices=profile_names,
-                default=config.get("default_profile", profile_names[0]),
-            )
-            render_and_open(config, profile_name=name)
+        elif choice == "g":
+            console.print("\n  [cyan]1[/]  Render a profile (layers overlaid on one image)")
+            console.print("  [cyan]2[/]  Render all layers (one image per layer)")
+            sub = Prompt.ask("  Choice", choices=["1", "2"], default="1")
+            if sub == "1":
+                name = Prompt.ask(
+                    "  Which profile?",
+                    choices=profile_names,
+                    default=default_profile,
+                )
+                render_and_open(config, profile_name=name)
+            else:
+                render_and_open(config, all_layers=True)
 
-        elif choice == "2":
-            render_and_open(config, all_layers=True)
-
-        elif choice == "3":
-            edit_global_settings(config)
+        elif choice == "s":
+            console.print("\n  [cyan]1[/]  Output   [dim]— image size, title[/]")
+            console.print("  [cyan]2[/]  Colors   [dim]— background, keys, text[/]")
+            sub = Prompt.ask("  Choice", choices=["1", "2"], default="1")
+            if sub == "1":
+                edit_global_settings(config)
+            else:
+                edit_colors(config)
             config = load_config()
 
-        elif choice == "4":
-            edit_colors(config)
-            config = load_config()
-
-        elif choice == "5":
-            name = Prompt.ask("Which profile?", choices=profile_names)
+        elif choice == "p":
+            profile_names = show_profiles(config)
+            name = Prompt.ask("  Which profile?", choices=profile_names)
             edit_profile_layers(config, name)
             config = load_config()
 
-        elif choice == "6":
-            name = Prompt.ask(
-                "Default profile",
-                choices=profile_names,
-                default=config.get("default_profile", profile_names[0]),
-            )
-            config["default_profile"] = name
-            save_config(config)
+        elif choice == "v":
+            console.print()
+            show_current_config(config)
+            show_profiles(config)
             console.print(f"[green]✓ Default set to '{name}'[/]")
 
 

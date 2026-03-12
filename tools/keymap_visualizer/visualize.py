@@ -79,7 +79,7 @@ KEYCODE_LABELS = {
     'C_BRI_UP': '\u2600+', 'C_BRI_DN': '\u2600-',
     # Misc — ≡ (U+2261) used for K_APP instead of ☰ (U+2630) for font compat
     'K_APP': '\u2261', 'KP_DOT': '.', 'KP_DIVIDE': '\u00F7',
-    'KP_MULTIPLY': '\u00D7', 'PSCRN': '\u21BB', 'GLOBE': '\u2609',
+    'KP_MULTIPLY': '\u00D7', 'PSCRN': '\u2399', 'GLOBE': '\u2609',
     # Encoder placeholder keys — use simple text instead of Unicode
     'F16': 'Enc', 'F17': 'Enc',
 }
@@ -97,17 +97,44 @@ MOD_SYMBOLS = {
     'LS': '\u21E7', 'RS': '\u21E7',   # ⇧
 }
 
+# Semantic shortcuts — replace verbose modifier chains with concise symbols
+SEMANTIC_SHORTCUTS = {
+    # Mac screenshot variants → ⎙ (print screen symbol)
+    'LG(LS(N3))': '\u2399',           # ⌘⇧3 full screenshot
+    'LG(LS(N4))': '\u2399',           # ⌘⇧4 area screenshot
+    'LG(LS(N5))': '\u2399',           # ⌘⇧5 screenshot options
+    'LG(LS(S))': '\u2399',            # ⌘⇧S screenshot variant
+    'LA(PSCRN)': '\u2399',            # Alt+PrtSc window screenshot
+    # Mac navigation — ⌘Arrow = Home/End semantically
+    'LG(LEFT)': '\u21F1',             # ⌘← → ⇱ line start
+    'LG(RIGHT)': '\u21F2',            # ⌘→ → ⇲ line end
+    'LG(UP)': '\u21DE',               # ⌘↑ → ⇞ document top
+    'LG(DOWN)': '\u21DF',             # ⌘↓ → ⇟ document bottom
+    # Tab variants
+    'LS(TAB)': '\u21E4',              # Shift+Tab → ⇤ backtab
+    # Emoji picker
+    'LC(LG(SPACE))': '\u263A',        # Ctrl+Cmd+Space → ☺ emoji
+}
+
 
 def keycode_label(code):
     """Convert a ZMK keycode like 'GRAVE' or 'LA(BSPC)' to readable text."""
     if not code:
         return '?'
 
+    # Semantic shortcuts — concise symbols for known multi-modifier combos
+    if code in SEMANTIC_SHORTCUTS:
+        return SEMANTIC_SHORTCUTS[code]
+
     # Handle nested modifier wrapping: LA(BSPC), LG(LS(N4)), etc.
     mod_match = re.match(r'^([LR][ACGS])\((.+)\)$', code)
     if mod_match:
+        # Check the full expression first (catches LG(LS(N4)) etc.)
+        inner_full = mod_match.group(2)
+        if f"{mod_match.group(1)}({inner_full})" in SEMANTIC_SHORTCUTS:
+            return SEMANTIC_SHORTCUTS[f"{mod_match.group(1)}({inner_full})"]
         prefix = MOD_SYMBOLS.get(mod_match.group(1), '')
-        inner = keycode_label(mod_match.group(2))
+        inner = keycode_label(inner_full)
         return f"{prefix}{inner}"
 
     # Single letter keys (A-Z) are just themselves
@@ -234,7 +261,7 @@ def binding_to_label(binding):
     # Custom macros
     macro_labels = {
         '&mac_talk': 'Dictn',
-        '&mac_cap_app': 'Cap\nApp',
+        '&mac_cap_app': '\u2399\nApp',
         '&df_graphite': 'Set\nGR',
         '&df_mac': 'Set\nMac',
         '&df_win': 'Set\nWin',
@@ -622,6 +649,20 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         draw_rounded_rect(draw, bbox, corner_radius,
                           fill=fill, outline=border, width=2)
 
+    # ─── Accent stripe at bottom of layer trigger keys ───
+    for i, bbox in enumerate(key_bboxes):
+        if i not in trigger_tints:
+            continue
+        x0, y0, x1, y1 = bbox
+        stripe_h = max(3, int(scale * 0.6))
+        stripe_inset = max(4, int(scale * 1.5))
+        stripe_color = dim_color(trigger_tints[i], bg_color, alpha=0.50)
+        draw.rounded_rectangle(
+            (x0 + stripe_inset, y1 - stripe_h - stripe_inset // 2,
+             x1 - stripe_inset, y1 - stripe_inset // 2),
+            radius=max(1, stripe_h // 2), fill=stripe_color
+        )
+
     # ─── Draw layer labels on keys ───
     for lc in layer_configs:
         layer_idx = lc['index']
@@ -671,12 +712,26 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
                 draw.text((cx, primary_y), primary_label, fill=color,
                           font=primary_font, anchor='mm')
 
-                # Secondary: shifted down, ~55% size, dimmed
+                # Secondary: shifted down, ~55% size, in pill badge
                 sec_size = max(10, int(font_size * 0.55))
                 sec_chain = load_font(sec_size)
                 sec_font = sec_chain.select(secondary_label)
                 sec_color = dim_color(color, bg_color, alpha=0.55)
                 sec_y = by0 + int(kh * 0.72)
+
+                # Draw pill background behind secondary text
+                tw = int(sec_font.getlength(secondary_label))
+                pill_pad = max(4, sec_size // 3)
+                pill_h = sec_size + pill_pad
+                pill_w = tw + pill_pad * 2
+                pill_color = dim_color(color, bg_color, alpha=0.10)
+                draw.rounded_rectangle(
+                    (int(cx - pill_w / 2), int(sec_y - pill_h / 2),
+                     int(cx + pill_w / 2), int(sec_y + pill_h / 2)),
+                    radius=min(pill_h // 2, pill_pad),
+                    fill=pill_color
+                )
+
                 draw.text((cx, sec_y), secondary_label, fill=sec_color,
                           font=sec_font, anchor='mm')
                 continue
@@ -694,13 +749,18 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
             draw.text((x, y), label, fill=color, font=font, anchor=anchor)
 
     # ─── Legend ───
+    POSITION_HINTS = {
+        'center': '', 'tl': '\u2196', 'tr': '\u2197',
+        'bl': '\u2199', 'br': '\u2198',
+    }
     legend_chain = load_font(int(18 * font_scale))
     legend_y = img_h - legend_height + 24
     legend_x = padding
 
     for lc in layer_configs:
         color = hex_to_rgb(lc['color'])
-        name = lc['name']
+        hint = POSITION_HINTS.get(lc['position'], '')
+        name = f"{lc['name']} {hint}" if hint else lc['name']
 
         # Draw colored dot
         dot_r = 7
