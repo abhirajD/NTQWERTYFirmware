@@ -97,6 +97,9 @@ MOD_SYMBOLS = {
     'LS': '\u21E7', 'RS': '\u21E7',   # ⇧
 }
 
+# Inline icon placeholder — replaced with drawn vector icons during rendering
+BT_ICON = '\ue000'   # Bluetooth rune (drawn programmatically)
+
 # Semantic shortcuts — replace verbose modifier chains with concise symbols
 SEMANTIC_SHORTCUTS = {
     # Mac screenshot variants → ⎙ (print screen symbol)
@@ -216,20 +219,20 @@ def binding_to_label(binding):
     if behavior == '&soft_off':
         return '\u23FB'
 
-    # Bluetooth key-press (hold=BT select, tap=key)
+    # Bluetooth key-press (hold=BT select, tap=key) — BT icon
     if behavior == '&btkp':
         profile = args[0] if args else '?'
         key = keycode_label(args[1]) if len(args) > 1 else '?'
-        return f"{key}\nBT{profile}"
+        return f"{key}\n{BT_ICON}{profile}"
 
     # USB/Output toggle with escape
     if behavior == '&usb_tog':
         key = keycode_label(args[1]) if len(args) > 1 else 'USB'
         return f"{key}\nUSB"
 
-    # BT clear key-press
+    # BT clear key-press — BT icon + ✗ = clear
     if behavior == '&btclr_kp':
-        return 'BT\n\u2717'  # ✗ = clear/delete
+        return f'{BT_ICON}\n\u2717'
 
     # Backlight — ◐ = toggle (half-filled), ☀ = brightness levels
     if behavior == '&bl':
@@ -243,9 +246,9 @@ def binding_to_label(binding):
             return f'\u2600{val}'
         return bl_labels.get(cmd, f'BL {cmd}')
 
-    # Output toggle — ⇌ = bidirectional switch (USB ↔ BT)
+    # Output toggle — ⚡ = USB, BT icon, ⇌ = switch between
     if behavior == '&out':
-        return '\u21CC'
+        return f'\u26A1\u21CC{BT_ICON}'
 
     # Mouse key press
     if behavior == '&mkp':
@@ -553,6 +556,67 @@ def dim_color(color_rgb, bg_rgb, alpha=0.2):
     return tuple(int(bg + alpha * (fg - bg)) for fg, bg in zip(color_rgb, bg_rgb))
 
 
+def draw_bt_icon(draw, cx, cy, size, color):
+    """Draw the Bluetooth rune logo at (cx, cy) with given size and color."""
+    h = size
+    w = size * 0.5
+    lw = max(1, round(size / 10))
+
+    top = (cx, cy - h / 2)
+    bottom = (cx, cy + h / 2)
+    mid_l = (cx - w, cy)
+    tr = (cx + w, cy - h / 4)
+    br = (cx + w, cy + h / 4)
+    center = (cx, cy)
+
+    draw.line([top, bottom], fill=color, width=lw)
+    draw.line([mid_l, tr], fill=color, width=lw)
+    draw.line([tr, center], fill=color, width=lw)
+    draw.line([mid_l, br], fill=color, width=lw)
+    draw.line([br, center], fill=color, width=lw)
+
+
+def _render_label_with_icons(draw, text, x, y, anchor, font, font_size, color):
+    """Draw text, replacing BT_ICON placeholders with drawn Bluetooth icons."""
+    if BT_ICON not in text:
+        draw.text((x, y), text, fill=color, font=font, anchor=anchor)
+        return
+
+    # Split text around BT_ICON markers and draw piece by piece
+    parts = text.split(BT_ICON)
+    icon_size = int(font_size * 0.9)
+
+    # Calculate total width: text parts + icon slots
+    text_widths = [font.getlength(p) for p in parts]
+    icon_w = icon_size * 0.6
+    n_icons = len(parts) - 1
+    total_w = sum(text_widths) + n_icons * icon_w
+
+    # Determine starting x based on anchor
+    if anchor and anchor[1] == 'm':  # horizontally centered
+        cur_x = x - total_w / 2
+    elif anchor and anchor[1] == 'r':  # right-aligned
+        cur_x = x - total_w
+    else:
+        cur_x = x
+
+    # Vertical center based on anchor
+    if anchor and anchor[0] == 'm':  # vertically centered
+        text_y = y
+        icon_cy = y
+    else:
+        text_y = y
+        icon_cy = y - font_size * 0.35
+
+    for i, part in enumerate(parts):
+        if part:
+            draw.text((cur_x, text_y), part, fill=color, font=font, anchor='lm')
+            cur_x += font.getlength(part)
+        if i < n_icons:
+            draw_bt_icon(draw, cur_x + icon_w / 2, icon_cy, icon_size, color)
+            cur_x += icon_w
+
+
 def render_keyboard(all_layers, layer_configs, config, output_path,
                     layer_defines=None):
     """Render the keyboard with overlaid layers to a PNG file."""
@@ -709,20 +773,23 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
                 cx = bx0 + (bx1 - bx0) // 2
 
                 # Primary: shifted up, full size, full color
-                primary_font = font_chain.select(primary_label)
+                clean_primary = primary_label.replace(BT_ICON, '')
+                primary_font = font_chain.select(clean_primary or primary_label)
                 primary_y = by0 + int(kh * 0.38)
-                draw.text((cx, primary_y), primary_label, fill=color,
-                          font=primary_font, anchor='mm')
+                _render_label_with_icons(draw, primary_label, cx, primary_y,
+                                         'mm', primary_font, font_size, color)
 
                 # Secondary: shifted down, ~55% size, in pill badge
                 sec_size = max(10, int(font_size * 0.55))
                 sec_chain = load_font(sec_size)
-                sec_font = sec_chain.select(secondary_label)
+                clean_secondary = secondary_label.replace(BT_ICON, '')
+                sec_font = sec_chain.select(clean_secondary or secondary_label)
                 sec_color = dim_color(color, bg_color, alpha=0.55)
                 sec_y = by0 + int(kh * 0.72)
 
                 # Draw pill background behind secondary text
-                tw = int(sec_font.getlength(secondary_label))
+                icon_extra = int(sec_size * 0.6) * secondary_label.count(BT_ICON)
+                tw = int(sec_font.getlength(clean_secondary)) + icon_extra
                 pill_pad = max(4, sec_size // 3)
                 pill_h = sec_size + pill_pad
                 pill_w = tw + pill_pad * 2
@@ -734,21 +801,23 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
                     fill=pill_color
                 )
 
-                draw.text((cx, sec_y), secondary_label, fill=sec_color,
-                          font=sec_font, anchor='mm')
+                _render_label_with_icons(draw, secondary_label, cx, sec_y,
+                                         'mm', sec_font, sec_size, sec_color)
                 continue
 
             # For multi-line labels in corner positions, take only first line
             if position != 'center' and '\n' in label:
                 label = label.split('\n')[0]
 
-            # Truncate long labels for corner positions
-            if position != 'center' and len(label) > 8:
-                label = label[:7] + '..'
+            # Truncate long labels for corner positions (ignore icon markers)
+            clean_label = label.replace(BT_ICON, '')
+            if position != 'center' and len(clean_label) > 8:
+                clean_label = clean_label[:7] + '..'
+                label = clean_label  # drop icons if truncating
 
-            font = font_chain.select(label)
-            x, y, anchor = text_anchor_pos(draw, label, font, position, bbox)
-            draw.text((x, y), label, fill=color, font=font, anchor=anchor)
+            font = font_chain.select(clean_label or label)
+            x, y, anchor = text_anchor_pos(draw, clean_label, font, position, bbox)
+            _render_label_with_icons(draw, label, x, y, anchor, font, font_size, color)
 
     # ─── Legend ───
     POSITION_HINTS = {
