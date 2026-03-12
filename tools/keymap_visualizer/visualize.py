@@ -57,37 +57,37 @@ KEYCODE_LABELS = {
     'LEFT_BRACE': '{', 'RIGHT_BRACE': '}', 'PIPE': '|',
     'EXCL': '!', 'AT': '@', 'HASH': '#', 'DLLR': '$', 'PRCNT': '%',
     'CARET': '^', 'AMPERSAND': '&', 'STAR': '*', 'LPAR': '(', 'RPAR': ')',
-    # Navigation — Unicode arrows
+    # Navigation — Unicode arrows (keep: universally recognized)
     'UP': '\u2191', 'DOWN': '\u2193', 'LEFT': '\u2190', 'RIGHT': '\u2192',
     'PG_UP': '\u21DE', 'PG_DN': '\u21DF', 'HOME': '\u21F1', 'END': '\u21F2',
-    # Modifiers — Apple/Unicode symbols
+    # Modifiers — Apple symbols (keep: standard Mac convention)
     'LSHIFT': '\u21E7', 'RSHIFT': '\u21E7',      # ⇧
     'LCTRL': '\u2303', 'RCTRL': '\u2303',         # ⌃
     'LALT': '\u2325', 'RALT': '\u2325',           # ⌥
     'LGUI': '\u2318', 'RGUI': '\u2318',           # ⌘
-    # Special keys — Unicode symbols
+    # Special keys — Unicode symbols (keep: standard keyboard symbols)
     'TAB': '\u21E5', 'ENTER': '\u21B5', 'SPACE': '\u2423', 'RET': '\u21B5',
     'BSPC': '\u232B', 'DEL': '\u2326', 'ESC': '\u238B', 'ESCAPE': '\u238B',
-    'CAPS': '\u21EA',                               # ⇪
+    'CAPS': '\uf023',                               # Nerd:  lock
     # Function keys
     'F1': 'F1', 'F2': 'F2', 'F3': 'F3', 'F4': 'F4', 'F5': 'F5',
     'F6': 'F6', 'F7': 'F7', 'F8': 'F8', 'F9': 'F9', 'F10': 'F10',
     'F11': 'F11', 'F12': 'F12', 'F13': 'F13',
-    # Media — Unicode symbols
-    'C_VOL_UP': '\u266B+', 'C_VOL_DN': '\u266B-', 'C_MUTE': '\u266B\u00D7',
-    'C_PREV': '\u23EE', 'C_PP': '\u23EF', 'C_NEXT': '\u23ED',
-    'C_BRI_UP': '\u2600+', 'C_BRI_DN': '\u2600-',
-    # Misc — ≡ (U+2261) used for K_APP instead of ☰ (U+2630) for font compat
+    # Media — Nerd Font speaker icons (self-descriptive, no +/- needed)
+    'C_VOL_UP': '\uf028', 'C_VOL_DN': '\uf027', 'C_MUTE': '\uf026',
+    'C_PREV': '\uf04a', 'C_PP': '\uf04b', 'C_NEXT': '\uf04e',
+    'C_BRI_UP': '\uf185+', 'C_BRI_DN': '\uf185\u2212',
+    # Misc
     'K_APP': '\u2261', 'KP_DOT': '.', 'KP_DIVIDE': '\u00F7',
-    'KP_MULTIPLY': '\u00D7', 'PSCRN': '\u2399', 'GLOBE': '\u2609',
-    # Encoder placeholder keys — use simple text instead of Unicode
+    'KP_MULTIPLY': '\u00D7', 'PSCRN': '\uf030', 'GLOBE': '\uf0ac',
+    # Encoder placeholder keys
     'F16': '\u25CE', 'F17': '\u25CE',
 }
 
 LAYER_ABBREVS = {
     'GRAPHITE': 'GR', 'MACOS': 'Mac', 'WINDOWS': 'Win',
     'M_SYMBOLS': 'Sym', 'W_SYMBOLS': 'Sym', 'NUMPAD': 'Num',
-    'M_FKEYS': 'FK', 'W_FKEYS': 'FK', 'KB_CONFIG': '\u2699',
+    'M_FKEYS': 'FK', 'W_FKEYS': 'FK', 'KB_CONFIG': '\uf013',  # Nerd:  gear
 }
 
 MOD_SYMBOLS = {
@@ -99,12 +99,12 @@ MOD_SYMBOLS = {
 
 # Semantic shortcuts — replace verbose modifier chains with concise symbols
 SEMANTIC_SHORTCUTS = {
-    # Mac screenshot variants → ⎙ (print screen symbol)
-    'LG(LS(N3))': '\u2399',           # ⌘⇧3 full screenshot
-    'LG(LS(N4))': '\u2399',           # ⌘⇧4 area screenshot
-    'LG(LS(N5))': '\u2399',           # ⌘⇧5 screenshot options
-    'LG(LS(S))': '\u2399',            # ⌘⇧S screenshot variant
-    'LA(PSCRN)': '\u2399',            # Alt+PrtSc window screenshot
+    # Mac screenshot variants → Nerd:  camera
+    'LG(LS(N3))': '\uf030',           # ⌘⇧3 full screenshot
+    'LG(LS(N4))': '\uf030',           # ⌘⇧4 area screenshot
+    'LG(LS(N5))': '\uf030',           # ⌘⇧5 screenshot options
+    'LG(LS(S))': '\uf030',            # ⌘⇧S screenshot variant
+    'LA(PSCRN)': '\uf030',            # Alt+PrtSc window screenshot
     # Mac navigation — ⌘Arrow = Home/End semantically
     'LG(LEFT)': '\u21E4_',            # ⌘← → ⇤_ line start
     'LG(RIGHT)': '_\u21E5',           # ⌘→ → _⇥ line end
@@ -212,9 +212,9 @@ def binding_to_label(binding):
     if behavior == '&scw':
         return '\u21E7\nCW'
 
-    # Soft off (power)
+    # Soft off — Nerd:  power
     if behavior == '&soft_off':
-        return '\u23FB'
+        return '\uf011'
 
     # Bluetooth key-press (hold=BT select, tap=key)
     if behavior == '&btkp':
@@ -231,26 +231,26 @@ def binding_to_label(binding):
     if behavior == '&btclr_kp':
         return '\uf293\n\u2717'
 
-    # Backlight — ◐ = toggle (half-filled), ☀ = brightness levels
+    # Backlight — Nerd:  toggle,  sun for brightness
     if behavior == '&bl':
         cmd = args[0] if args else ''
         bl_labels = {
-            'BL_TOG': '\u25D0', 'BL_INC': '\u2600+', 'BL_DEC': '\u2600\u2212',
-            'BL_ON': '\u2600', 'BL_OFF': '\u25CB',
+            'BL_TOG': '\uf205', 'BL_INC': '\uf185+', 'BL_DEC': '\uf185\u2212',
+            'BL_ON': '\uf185', 'BL_OFF': '\uf186',
         }
         if cmd == 'BL_SET':
             val = args[1] if len(args) > 1 else '?'
-            return f'\u2600{val}'
+            return f'\uf185{val}'
         return bl_labels.get(cmd, f'BL {cmd}')
 
-    # Output toggle — Nerd Font: USB  ⇌  BT 
+    # Output toggle — Nerd Font: USB / BT
     if behavior == '&out':
-        return '\uf287\u21CC\uf293'
+        return '\uf287/\uf293'
 
-    # Mouse key press
+    # Mouse key press — Nerd:  mouse cursor
     if behavior == '&mkp':
         key = args[0] if args else '?'
-        labels = {'LCLK': '\u25C9', 'RCLK': 'R\u25C9', 'MCLK': 'M\u25C9'}  # ◉ = click
+        labels = {'LCLK': '\uf245', 'RCLK': 'R\uf245', 'MCLK': 'M\uf245'}
         return labels.get(key, key)
 
     # Tap-dances: Symbols/Numpad dual-function
@@ -258,15 +258,15 @@ def binding_to_label(binding):
     if behavior in ('&td1', '&td2'):
         return 'Sym\n\u21C4Num'
 
-    # Custom macros
+    # Custom macros — Nerd Font icons for OS-specific defaults
     macro_labels = {
-        '&mac_talk': '\U0001F399',  # 🎙 studio microphone
-        '&mac_cap_app': 'Cap\nApp',
-        '&df_graphite': '\u2302\nGR',    # ⌂ = home/default layer
-        '&df_mac': '\u2302\nMac',
-        '&df_win': '\u2302\nWin',
+        '&mac_talk': '\uf130',        # Nerd:  microphone
+        '&mac_cap_app': '\uf2d0',     # Nerd:  window (app switcher)
+        '&df_graphite': '\uf015\nGR', # Nerd:  home + layout name
+        '&df_mac': '\uf179',          # Nerd:  Apple logo
+        '&df_win': '\uf17a',          # Nerd:  Windows logo
         '&kpss': 'KP',
-        '&btsel': 'BT Sel',
+        '&btsel': '\uf293',           # Nerd:  BT
     }
     if behavior in macro_labels:
         return macro_labels[behavior]
