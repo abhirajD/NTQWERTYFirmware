@@ -356,7 +356,6 @@ def main_menu():
             console.print()
             show_current_config(config)
             show_profiles(config)
-            console.print(f"[green]✓ Default set to '{name}'[/]")
 
 
 if __name__ == "__main__":

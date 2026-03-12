@@ -106,8 +106,8 @@ SEMANTIC_SHORTCUTS = {
     'LG(LS(S))': '\u2399',            # ⌘⇧S screenshot variant
     'LA(PSCRN)': '\u2399',            # Alt+PrtSc window screenshot
     # Mac navigation — ⌘Arrow = Home/End semantically
-    'LG(LEFT)': '\u21F1',             # ⌘← → ⇱ line start
-    'LG(RIGHT)': '\u21F2',            # ⌘→ → ⇲ line end
+    'LG(LEFT)': '\u21E4_',            # ⌘← → ⇤_ line start
+    'LG(RIGHT)': '_\u21E5',           # ⌘→ → _⇥ line end
     'LG(UP)': '\u21DE',               # ⌘↑ → ⇞ document top
     'LG(DOWN)': '\u21DF',             # ⌘↓ → ⇟ document bottom
     # Tab variants
@@ -261,7 +261,7 @@ def binding_to_label(binding):
     # Custom macros
     macro_labels = {
         '&mac_talk': 'Dictn',
-        '&mac_cap_app': '\u2399\nApp',
+        '&mac_cap_app': 'Cap\nApp',
         '&df_graphite': 'Set\nGR',
         '&df_mac': 'Set\nMac',
         '&df_win': 'Set\nWin',
