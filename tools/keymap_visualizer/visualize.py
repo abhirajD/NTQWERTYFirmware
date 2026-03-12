@@ -190,10 +190,10 @@ def binding_to_label(binding):
         layer = layer_abbrev(args[0]) if args else '?'
         return layer
 
-    # Toggle layer
+    # Toggle layer — pin icon conveys "stick to this layer"
     if behavior == '&tog':
         layer = layer_abbrev(args[0]) if args else '?'
-        return f"Tog\n{layer}"
+        return f"\uf08d{layer}"
 
     # To layer
     if behavior == '&to':
@@ -235,7 +235,7 @@ def binding_to_label(binding):
     if behavior == '&bl':
         cmd = args[0] if args else ''
         bl_labels = {
-            'BL_TOG': '\uf205', 'BL_INC': '\uf185+', 'BL_DEC': '\uf185\u2212',
+            'BL_TOG': '\uf0eb', 'BL_INC': '\uf185+', 'BL_DEC': '\uf185\u2212',
             'BL_ON': '\uf185', 'BL_OFF': '\uf186',
         }
         if cmd == 'BL_SET':
