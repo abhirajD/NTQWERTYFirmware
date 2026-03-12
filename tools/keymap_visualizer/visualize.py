@@ -195,10 +195,10 @@ def binding_to_label(binding):
         layer = layer_abbrev(args[0]) if args else '?'
         return f"\uf08d{layer}"
 
-    # To layer
+    # To layer — arrow conveys "go to"
     if behavior == '&to':
         layer = layer_abbrev(args[0]) if args else '?'
-        return f"To\n{layer}"
+        return f"\u2192{layer}"
 
     # Custom backspace hold-tap
     if behavior == '&backspace_word':
@@ -254,15 +254,15 @@ def binding_to_label(binding):
         return labels.get(key, key)
 
     # Tap-dances: Symbols/Numpad dual-function
-    # td1: hold=Symbols (momentary), double-tap=toggle Numpad
+    # td1: tap=Symbols (momentary), double-tap=pin Numpad
     if behavior in ('&td1', '&td2'):
-        return 'Sym\n\u21C4Num'
+        return 'Sym\n\uf08dNum'
 
     # Custom macros — Nerd Font icons for OS-specific defaults
     macro_labels = {
         '&mac_talk': '\uf130',        # Nerd:  microphone
         '&mac_cap_app': '\uf2d0',     # Nerd:  window (app switcher)
-        '&df_graphite': '\uf015\nGR', # Nerd:  home + layout name
+        '&df_graphite': '\uf11c\nGR', # Nerd:  keyboard + layout name
         '&df_mac': '\uf179',          # Nerd:  Apple logo
         '&df_win': '\uf17a',          # Nerd:  Windows logo
         '&kpss': 'KP',
@@ -271,13 +271,13 @@ def binding_to_label(binding):
     if behavior in macro_labels:
         return macro_labels[behavior]
 
-    # BT commands
+    # BT commands — use BT icon for consistency
     if behavior == '&bt':
         cmd = args[0] if args else ''
         if cmd == 'BT_CLR':
-            return 'BT Clr'
+            return '\uf293\u2717'
         if cmd == 'BT_SEL':
-            return f'BT{args[1]}' if len(args) > 1 else 'BT Sel'
+            return f'\uf293{args[1]}' if len(args) > 1 else '\uf293'
         return f'BT {cmd}'
 
     # Fallback: show behavior name cleaned up
