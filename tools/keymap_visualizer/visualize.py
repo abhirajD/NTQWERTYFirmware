@@ -150,18 +150,18 @@ def binding_to_label(binding):
     if behavior == '&lt':
         layer = layer_abbrev(args[0]) if args else '?'
         key = keycode_label(args[1]) if len(args) > 1 else '?'
-        return f"{key}\n({layer})"
+        return f"{key}\n{layer}"
 
     # Mod-tap: hold=modifier, tap=key
     if behavior == '&mt':
         mod = keycode_label(args[0]) if args else ''
         key = keycode_label(args[1]) if len(args) > 1 else '?'
-        return f"{key}\n({mod})"
+        return f"{key}\n{mod}"
 
     # Momentary layer
     if behavior == '&mo':
         layer = layer_abbrev(args[0]) if args else '?'
-        return f"({layer})"
+        return layer
 
     # Toggle layer
     if behavior == '&tog':
@@ -175,15 +175,15 @@ def binding_to_label(binding):
 
     # Custom backspace hold-tap
     if behavior == '&backspace_word':
-        return '\u232B\n(\u232BW)'
+        return '\u232B\n\u232BW'
 
     # Custom forward-delete hold-tap (symmetric to backspace_word)
     if behavior == '&delete_word':
-        return '\u2326\n(\u2326W)'
+        return '\u2326\n\u2326W'
 
     # Shift/capsword hold-tap
     if behavior == '&scw':
-        return '\u21E7\n(CW)'
+        return '\u21E7\nCW'
 
     # Soft off (power)
     if behavior == '&soft_off':
@@ -193,12 +193,12 @@ def binding_to_label(binding):
     if behavior == '&btkp':
         profile = args[0] if args else '?'
         key = keycode_label(args[1]) if len(args) > 1 else '?'
-        return f"{key}\n(BT{profile})"
+        return f"{key}\nBT{profile}"
 
     # USB/Output toggle with escape
     if behavior == '&usb_tog':
         key = keycode_label(args[1]) if len(args) > 1 else 'USB'
-        return f"{key}\n(USB)"
+        return f"{key}\nUSB"
 
     # BT clear key-press
     if behavior == '&btclr_kp':
@@ -583,20 +583,35 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
                 if target_layer in layer_color_map:
                     trigger_tints[key_idx] = layer_color_map[target_layer]
 
-    # ─── Draw key caps ───
+    # ─── Calculate key bounding boxes ───
     key_bboxes = []
     for i, (lx, ly) in enumerate(PHYSICAL_KEYS):
         x0 = int(lx * scale) + padding + key_gap
         y0 = int(ly * scale) + padding + title_height + key_gap
         x1 = int((lx + KEY_SIZE) * scale) + padding - key_gap
         y1 = int((ly + KEY_SIZE) * scale) + padding + title_height - key_gap
+        key_bboxes.append((x0, y0, x1, y1))
 
+    # ─── Draw glow behind layer trigger keys ───
+    glow_base = max(2, int(scale * 1.2))
+    for i, bbox in enumerate(key_bboxes):
+        if i not in trigger_tints:
+            continue
+        x0, y0, x1, y1 = bbox
+        glow_color = trigger_tints[i]
+        for g_mult, g_alpha in [(3, 0.06), (2, 0.12), (1, 0.20)]:
+            g = glow_base * g_mult
+            g_rgb = dim_color(glow_color, bg_color, alpha=g_alpha)
+            draw_rounded_rect(draw, (x0 - g, y0 - g, x1 + g, y1 + g),
+                              corner_radius + g, fill=g_rgb)
+
+    # ─── Draw key caps ───
+    for i, bbox in enumerate(key_bboxes):
         is_encoder = i in ENCODER_POSITIONS
 
-        # Determine key fill color (tinted if it's a layer trigger)
         if i in trigger_tints:
-            fill = dim_color(trigger_tints[i], bg_color, alpha=0.25)
-            border = dim_color(trigger_tints[i], bg_color, alpha=0.5)
+            fill = dim_color(trigger_tints[i], bg_color, alpha=0.08)
+            border = dim_color(trigger_tints[i], bg_color, alpha=0.40)
         elif is_encoder:
             fill = enc_fill
             border = enc_border
@@ -604,9 +619,8 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
             fill = key_fill
             border = key_border
 
-        draw_rounded_rect(draw, (x0, y0, x1, y1), corner_radius,
+        draw_rounded_rect(draw, bbox, corner_radius,
                           fill=fill, outline=border, width=2)
-        key_bboxes.append((x0, y0, x1, y1))
 
     # ─── Draw layer labels on keys ───
     for lc in layer_configs:
@@ -639,6 +653,32 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
 
             label = binding_to_label(layer_bindings[key_idx])
             if not label:
+                continue
+
+            # Center position with multi-line: split primary/secondary
+            if position == 'center' and '\n' in label:
+                lines = label.split('\n', 1)
+                primary_label = lines[0]
+                secondary_label = lines[1]
+
+                bx0, by0, bx1, by1 = bbox
+                kh = by1 - by0
+                cx = bx0 + (bx1 - bx0) // 2
+
+                # Primary: shifted up, full size, full color
+                primary_font = font_chain.select(primary_label)
+                primary_y = by0 + int(kh * 0.38)
+                draw.text((cx, primary_y), primary_label, fill=color,
+                          font=primary_font, anchor='mm')
+
+                # Secondary: shifted down, ~55% size, dimmed
+                sec_size = max(10, int(font_size * 0.55))
+                sec_chain = load_font(sec_size)
+                sec_font = sec_chain.select(secondary_label)
+                sec_color = dim_color(color, bg_color, alpha=0.55)
+                sec_y = by0 + int(kh * 0.72)
+                draw.text((cx, sec_y), secondary_label, fill=sec_color,
+                          font=sec_font, anchor='mm')
                 continue
 
             # For multi-line labels in corner positions, take only first line

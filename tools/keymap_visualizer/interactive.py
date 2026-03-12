@@ -49,18 +49,24 @@ def show_current_config(config):
     )
     table.add_column("Setting", style="bold")
     table.add_column("Value", style="green")
+    table.add_column("Info", style="dim")
 
-    table.add_row("Scale", str(config.get("scale", 3.0)))
-    table.add_row("Font Scale", str(config.get("font_scale", 1.0)))
-    table.add_row("Key Gap", str(config.get("key_gap", 5)))
-    table.add_row("Corner Radius", str(config.get("corner_radius", 10)))
-    table.add_row("Padding", str(config.get("padding", 80)))
-    table.add_row("Title", config.get("title", ""))
+    table.add_row("Image Size", str(config.get("scale", 3.0)),
+                   "1=tiny, 3=medium, 5=large, 10=poster")
+    table.add_row("Font Size", str(config.get("font_scale", 1.0)),
+                   "Multiplier for all text (1.0=normal)")
+    table.add_row("Key Spacing", str(config.get("key_gap", 5)),
+                   "Gap between keys in px")
+    table.add_row("Key Roundness", str(config.get("corner_radius", 10)),
+                   "Corner radius in px (0=square)")
+    table.add_row("Edge Padding", str(config.get("padding", 80)),
+                   "Border around keyboard in px")
+    table.add_row("Title", config.get("title", ""), "")
 
     colors = config.get("colors", {})
-    table.add_row("Background", colors.get("background", "#0d1117"))
-    table.add_row("Key Fill", colors.get("key_fill", "#161b22"))
-    table.add_row("Key Border", colors.get("key_border", "#30363d"))
+    table.add_row("Background", colors.get("background", "#0d1117"), "Hex color")
+    table.add_row("Key Fill", colors.get("key_fill", "#161b22"), "Hex color")
+    table.add_row("Key Border", colors.get("key_border", "#30363d"), "Hex color")
 
     console.print(table)
 
@@ -133,37 +139,37 @@ def edit_global_settings(config):
     console.print("\n[bold]Global Settings[/] (press Enter to keep current)\n")
 
     val = Prompt.ask(
-        f"  Scale [dim](current: {config.get('scale', 3.0)})[/]",
+        f"  Image Size [dim](1=tiny, 3=medium, 5=large, 10=poster · current: {config.get('scale', 3.0)})[/]",
         default=str(config.get("scale", 3.0)),
     )
     config["scale"] = float(val)
 
     val = Prompt.ask(
-        f"  Font Scale [dim](current: {config.get('font_scale', 1.0)})[/]",
+        f"  Font Size [dim](multiplier: 0.5=smaller, 1.0=normal, 2.0=double · current: {config.get('font_scale', 1.0)})[/]",
         default=str(config.get("font_scale", 1.0)),
     )
     config["font_scale"] = float(val)
 
     val = Prompt.ask(
-        f"  Key Gap [dim](current: {config.get('key_gap', 5)})[/]",
+        f"  Key Spacing [dim](gap between keys in px · current: {config.get('key_gap', 5)})[/]",
         default=str(config.get("key_gap", 5)),
     )
     config["key_gap"] = int(val)
 
     val = Prompt.ask(
-        f"  Corner Radius [dim](current: {config.get('corner_radius', 10)})[/]",
+        f"  Key Roundness [dim](corner radius in px, 0=square · current: {config.get('corner_radius', 10)})[/]",
         default=str(config.get("corner_radius", 10)),
     )
     config["corner_radius"] = int(val)
 
     val = Prompt.ask(
-        f"  Padding [dim](current: {config.get('padding', 80)})[/]",
+        f"  Edge Padding [dim](border around keyboard in px · current: {config.get('padding', 80)})[/]",
         default=str(config.get("padding", 80)),
     )
     config["padding"] = int(val)
 
     val = Prompt.ask(
-        f"  Title [dim](current: {config.get('title', '')})[/]",
+        f"  Title [dim](text at top of image · current: {config.get('title', '')})[/]",
         default=config.get("title", ""),
     )
     config["title"] = val
