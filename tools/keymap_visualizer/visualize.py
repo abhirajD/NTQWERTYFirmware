@@ -260,7 +260,7 @@ def binding_to_label(binding):
 
     # Custom macros
     macro_labels = {
-        '&mac_talk': 'Dictn',
+        '&mac_talk': '\U0001F399',  # 🎙 studio microphone
         '&mac_cap_app': 'Cap\nApp',
         '&df_graphite': 'Set\nGR',
         '&df_mac': 'Set\nMac',
