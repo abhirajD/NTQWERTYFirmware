@@ -145,7 +145,7 @@
 
       settings_layer {
             display-name = "Settings";
-            sensor-bindings = <&bri_adjust &inc_dec_kp LEFT RIGHT>;
+            sensor-bindings = <&bri_adjust &inc_dec_kp C_BRI_UP C_BRI_DN>;
             bindings = <
 // ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬────────────────╮                                 ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮
       &out OUT_TOG     &btkp 0 N1      &btkp 1 N2      &btkp 2 N3      &btkp 3 N4      &btkp 4 N5 /*|                                 |*/   &kp N6         &kp N7          &kp N8          &kp N9          &kp N0          &soft_off
