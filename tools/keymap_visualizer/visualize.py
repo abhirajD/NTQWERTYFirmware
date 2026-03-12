@@ -231,16 +231,16 @@ def binding_to_label(binding):
     if behavior == '&btclr_kp':
         return 'BT\nClear'
 
-    # Backlight
+    # Backlight — ◐ = toggle (half-filled), ☀ = brightness levels
     if behavior == '&bl':
         cmd = args[0] if args else ''
         bl_labels = {
-            'BL_TOG': 'BL Tog', 'BL_INC': 'BL+', 'BL_DEC': 'BL-',
-            'BL_ON': 'BL On', 'BL_OFF': 'BL Off',
+            'BL_TOG': '\u25D0', 'BL_INC': '\u2600+', 'BL_DEC': '\u2600\u2212',
+            'BL_ON': '\u2600', 'BL_OFF': '\u25CB',
         }
         if cmd == 'BL_SET':
             val = args[1] if len(args) > 1 else '?'
-            return f'BL={val}'
+            return f'\u2600{val}'
         return bl_labels.get(cmd, f'BL {cmd}')
 
     # Output toggle
