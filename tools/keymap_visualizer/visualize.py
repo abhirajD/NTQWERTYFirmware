@@ -235,12 +235,12 @@ def binding_to_label(binding):
     if behavior == '&bl':
         cmd = args[0] if args else ''
         bl_labels = {
-            'BL_TOG': '\uf0eb', 'BL_INC': '\uf185+', 'BL_DEC': '\uf185\u2212',
-            'BL_ON': '\uf185', 'BL_OFF': '\uf186',
+            'BL_TOG': '\uf0eb', 'BL_INC': '\uf0eb+', 'BL_DEC': '\uf0eb\u2212',
+            'BL_ON': '\uf0eb', 'BL_OFF': '\uf0eb',
         }
         if cmd == 'BL_SET':
             val = args[1] if len(args) > 1 else '?'
-            return f'\uf185{val}'
+            return f'\uf0eb{val}'
         return bl_labels.get(cmd, f'BL {cmd}')
 
     # Output toggle — Nerd Font: USB / BT
