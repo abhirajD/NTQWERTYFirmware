@@ -59,7 +59,7 @@ KEYCODE_LABELS = {
     'CARET': '^', 'AMPERSAND': '&', 'STAR': '*', 'LPAR': '(', 'RPAR': ')',
     # Navigation — Unicode arrows
     'UP': '\u2191', 'DOWN': '\u2193', 'LEFT': '\u2190', 'RIGHT': '\u2192',
-    'PG_UP': '\u21DE', 'PG_DN': '\u21DF', 'HOME': '\u2912', 'END': '\u2913',
+    'PG_UP': '\u21DE', 'PG_DN': '\u21DF', 'HOME': '\u21F1', 'END': '\u21F2',
     # Modifiers — Apple/Unicode symbols
     'LSHIFT': '\u21E7', 'RSHIFT': '\u21E7',      # ⇧
     'LCTRL': '\u2303', 'RCTRL': '\u2303',         # ⌃
@@ -73,13 +73,13 @@ KEYCODE_LABELS = {
     'F1': 'F1', 'F2': 'F2', 'F3': 'F3', 'F4': 'F4', 'F5': 'F5',
     'F6': 'F6', 'F7': 'F7', 'F8': 'F8', 'F9': 'F9', 'F10': 'F10',
     'F11': 'F11', 'F12': 'F12', 'F13': 'F13',
-    # Media — Unicode symbols (avoiding emoji for font compatibility)
+    # Media — Unicode symbols
     'C_VOL_UP': '\u266B+', 'C_VOL_DN': '\u266B-', 'C_MUTE': '\u266B\u00D7',
     'C_PREV': '\u23EE', 'C_PP': '\u23EF', 'C_NEXT': '\u23ED',
     'C_BRI_UP': '\u2600+', 'C_BRI_DN': '\u2600-',
-    # Misc
-    'K_APP': '\u2630', 'KP_DOT': '.', 'KP_DIVIDE': '\u00F7',
-    'KP_MULTIPLY': '\u00D7', 'PSCRN': '\u2399', 'GLOBE': '\u2609',
+    # Misc — ≡ (U+2261) used for K_APP instead of ☰ (U+2630) for font compat
+    'K_APP': '\u2261', 'KP_DOT': '.', 'KP_DIVIDE': '\u00F7',
+    'KP_MULTIPLY': '\u00D7', 'PSCRN': '\u21BB', 'GLOBE': '\u2609',
     # Encoder placeholder keys — use simple text instead of Unicode
     'F16': 'Enc', 'F17': 'Enc',
 }
@@ -397,27 +397,94 @@ def parse_bindings_block(text):
 
 # ─── Renderer ───
 
+class FontChain:
+    """Multi-font fallback chain for complete Unicode coverage.
+
+    Loads fonts in priority order and selects the best font per label,
+    ensuring symbols like ⏮⏯⏭ render correctly even when no single
+    font covers all characters.
+
+    Font priority: NotoSansMono (text) → NotoSansSymbols (tech) →
+                   NotoSansSymbols2 (media/modifiers) → Menlo (system fallback)
+    """
+
+    _tofu_cache = {}  # (font_path, char) → bool
+
+    def __init__(self, size):
+        self.size = size
+        self.fonts = []  # [(font_obj, path_str), ...]
+        self._load_fonts(size)
+
+    def _load_fonts(self, size):
+        script_dir = Path(__file__).parent
+        font_dir = script_dir / 'fonts'
+
+        # Priority order: bundled Noto family first, then system fonts
+        candidates = [
+            font_dir / 'NotoSansMono.ttf',
+            font_dir / 'NotoSansSymbols.ttf',
+            font_dir / 'NotoSansSymbols2-Regular.ttf',
+            Path('/System/Library/Fonts/Menlo.ttc'),
+            Path('/System/Library/Fonts/SFNS.ttf'),
+            Path('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'),
+        ]
+        for fp in candidates:
+            try:
+                font = ImageFont.truetype(str(fp), size)
+                self.fonts.append((font, str(fp)))
+            except (IOError, OSError):
+                continue
+        if not self.fonts:
+            self.fonts.append((ImageFont.load_default(), 'default'))
+
+    def _is_tofu(self, font, font_path, char):
+        """Check if a character renders as tofu (missing glyph box)."""
+        cache_key = (font_path, self.size, char)
+        if cache_key in FontChain._tofu_cache:
+            return FontChain._tofu_cache[cache_key]
+
+        img1 = Image.new('L', (50, 50), 0)
+        ImageDraw.Draw(img1).text((5, 5), char, fill=255, font=font)
+        px1 = sum(img1.tobytes())
+
+        img2 = Image.new('L', (50, 50), 0)
+        ImageDraw.Draw(img2).text((5, 5), '\uffff', fill=255, font=font)
+        px2 = sum(img2.tobytes())
+
+        is_tofu = abs(px1 - px2) <= 50
+        FontChain._tofu_cache[cache_key] = is_tofu
+        return is_tofu
+
+    def select(self, text):
+        """Return the best font for the given label text.
+
+        Picks the first font that can render ALL characters without tofu.
+        Falls back to font with best character coverage.
+        """
+        chars = [ch for ch in text if ch not in (' ', '\n')]
+        if not chars:
+            return self.fonts[0][0]
+
+        best_font, best_count = self.fonts[0][0], 0
+        for font, fpath in self.fonts:
+            count = sum(1 for ch in chars
+                        if not self._is_tofu(font, fpath, ch))
+            if count == len(chars):
+                return font  # Perfect match
+            if count > best_count:
+                best_count = count
+                best_font = font
+        return best_font
+
+    @property
+    def primary(self):
+        """Return the primary (first) font for simple text."""
+        return self.fonts[0][0]
+
+
 def load_font(size):
-    """Try to load a font with good Unicode coverage, falling back gracefully."""
-    font_paths = [
-        # Menlo has excellent Unicode symbol coverage (media, arrows, etc.)
-        '/System/Library/Fonts/Menlo.ttc',
-        '/System/Library/Fonts/SFNS.ttf',
-        '/System/Library/Fonts/Supplemental/Apple Symbols.ttf',
-        '/System/Library/Fonts/SFNSMono.ttf',
-        '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',
-        '/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf',
-    ]
-    for fp in font_paths:
-        try:
-            return ImageFont.truetype(fp, size)
-        except (IOError, OSError):
-            continue
-    # Fallback to default
-    try:
-        return ImageFont.truetype("DejaVuSansMono.ttf", size)
-    except (IOError, OSError):
-        return ImageFont.load_default()
+    """Legacy wrapper — returns a FontChain for the given size."""
+    return FontChain(size)
 
 
 def hex_to_rgb(hex_color):
@@ -494,9 +561,9 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
 
     # ─── Title ───
     title_text = config.get('title', 'ZMK Keymap')
-    title_font = load_font(int(32 * font_scale))
+    title_chain = load_font(int(32 * font_scale))
     draw.text((img_w // 2, padding // 2 + 10), title_text,
-              fill=title_color, font=title_font, anchor='mm')
+              fill=title_color, font=title_chain.select(title_text), anchor='mm')
 
     # ─── Build layer trigger map for the center layer ───
     # Find keys that activate layers displayed in this profile
@@ -558,7 +625,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         else:
             font_size = max(10, int(key_px * 0.085 * font_scale))
 
-        font = load_font(font_size)
+        font_chain = load_font(font_size)
 
         if layer_idx >= len(all_layers):
             print(f"Warning: layer index {layer_idx} out of range", file=sys.stderr)
@@ -582,11 +649,12 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
             if position != 'center' and len(label) > 8:
                 label = label[:7] + '..'
 
+            font = font_chain.select(label)
             x, y, anchor = text_anchor_pos(draw, label, font, position, bbox)
             draw.text((x, y), label, fill=color, font=font, anchor=anchor)
 
     # ─── Legend ───
-    legend_font = load_font(int(18 * font_scale))
+    legend_chain = load_font(int(18 * font_scale))
     legend_y = img_h - legend_height + 24
     legend_x = padding
 
@@ -600,6 +668,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
                        legend_y + dot_r), fill=color)
 
         # Draw label
+        legend_font = legend_chain.select(name)
         draw.text((legend_x + 2 * dot_r + 8, legend_y), name,
                   fill=legend_color, font=legend_font, anchor='lm')
 
@@ -621,7 +690,7 @@ def render_single_layer(all_layers, layer_idx, layer_name, config, output_path,
         'index': layer_idx,
         'position': 'center',
         'color': '#e6edf3',
-        'font_size': 14,
+        'font_ratio': 0.18,
     }
     single_config = dict(config)
     single_config['title'] = f"{config.get('title', 'Keymap')} — {layer_name}"
