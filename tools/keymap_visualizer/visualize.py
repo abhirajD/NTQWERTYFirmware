@@ -386,6 +386,11 @@ def get_layer_trigger_map(bindings, layer_defines):
             if args:
                 layer_name = args[0]
                 target_layer = layer_defines.get(layer_name)
+        # Tap-dances: td1 activates M_SYMBOLS, td2 activates W_SYMBOLS
+        elif behavior == '&td1':
+            target_layer = layer_defines.get('M_SYMBOLS')
+        elif behavior == '&td2':
+            target_layer = layer_defines.get('W_SYMBOLS')
         # Macros that switch layers
         elif behavior == '&df_graphite':
             target_layer = layer_defines.get('GRAPHITE')
