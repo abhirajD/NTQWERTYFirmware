@@ -1,8 +1,8 @@
-scale: 5.0
-key_gap: 5
-corner_radius: 10
-padding: 80
-font_scale: 1.5
+scale: 3.0
+key_gap: 10
+corner_radius: 20
+padding: 20
+font_scale: 2.0
 colors:
   background: '#0d1117'
   key_fill: '#161b22'

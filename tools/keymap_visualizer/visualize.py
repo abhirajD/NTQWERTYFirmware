@@ -81,7 +81,7 @@ KEYCODE_LABELS = {
     'K_APP': '\u2261', 'KP_DOT': '.', 'KP_DIVIDE': '\u00F7',
     'KP_MULTIPLY': '\u00D7', 'PSCRN': '\u2399', 'GLOBE': '\u2609',
     # Encoder placeholder keys — use simple text instead of Unicode
-    'F16': 'Enc', 'F17': 'Enc',
+    'F16': '\u25CE', 'F17': '\u25CE',
 }
 
 LAYER_ABBREVS = {
@@ -253,10 +253,10 @@ def binding_to_label(binding):
         labels = {'LCLK': 'Click', 'RCLK': 'RClick', 'MCLK': 'MClick'}
         return labels.get(key, key)
 
-    # Tap-dances (custom, no args)
+    # Tap-dances: Symbols/Numpad dual-function
+    # td1: hold=Symbols (momentary), double-tap=toggle Numpad
     if behavior in ('&td1', '&td2'):
-        num = behavior[-1]
-        return f'TD{num}'
+        return 'Sym\n\u21C4Num'
 
     # Custom macros
     macro_labels = {
