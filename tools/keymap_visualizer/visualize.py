@@ -599,8 +599,10 @@ class FontChain:
 
         # Fast path: single font covers everything
         single = self.select(text)
+        single_path = next(
+            (p for f, p in self.fonts if f is single), '')
         all_ok = all(
-            not self._is_tofu(single, '', ch) for ch in visible
+            not self._is_tofu(single, single_path, ch) for ch in visible
         )
         if all_ok:
             draw.text(pos, text, fill=fill, font=single, anchor=anchor)
