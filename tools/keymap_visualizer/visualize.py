@@ -20,7 +20,7 @@ import sys
 import argparse
 import yaml
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageChops
 
 # ─── Physical Layout from rolio46-layout.dtsi ───
 # 48 positions: (x, y) in layout units (100 = 1 key width)
@@ -767,7 +767,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
             continue
         x0, y0, x1, y1 = bbox
         glow_color = trigger_tints[i]
-        for g_mult, g_alpha in [(3, 0.06), (2, 0.12), (1, 0.20)]:
+        for g_mult, g_alpha in [(4, 0.10), (3, 0.18), (2, 0.28), (1, 0.38)]:
             g = glow_base * g_mult
             g_rgb = dim_color(glow_color, bg_color, alpha=g_alpha)
             draw_rounded_rect(draw, (x0 - g, y0 - g, x1 + g, y1 + g),
@@ -778,8 +778,8 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         is_encoder = i in ENCODER_POSITIONS
 
         if i in trigger_tints:
-            fill = dim_color(trigger_tints[i], bg_color, alpha=0.08)
-            border = dim_color(trigger_tints[i], bg_color, alpha=0.40)
+            fill = dim_color(trigger_tints[i], bg_color, alpha=0.15)
+            border = dim_color(trigger_tints[i], bg_color, alpha=0.55)
         elif is_encoder:
             fill = enc_fill
             border = enc_border
@@ -797,7 +797,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         x0, y0, x1, y1 = bbox
         stripe_h = max(3, int(scale * 0.6))
         stripe_inset = max(4, int(scale * 1.5))
-        stripe_color = dim_color(trigger_tints[i], bg_color, alpha=0.50)
+        stripe_color = dim_color(trigger_tints[i], bg_color, alpha=0.65)
         draw.rounded_rectangle(
             (x0 + stripe_inset, y1 - stripe_h - stripe_inset // 2,
              x1 - stripe_inset, y1 - stripe_inset // 2),
@@ -817,6 +817,10 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
                      fill=dot_color)
 
     # ─── Draw layer labels on keys ───
+    # Two-pass for center labels: 1) blurred glow layer, 2) crisp text on top
+    center_glow_layer = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    center_glow_draw = ImageDraw.Draw(center_glow_layer)
+
     for lc in layer_configs:
         layer_idx = lc['index']
         position = lc['position']
@@ -873,8 +877,11 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
                 kh = by1 - by0
                 cx = bx0 + (bx1 - bx0) // 2
 
-                # Primary: shifted up, full size, full color
+                # Primary: shifted up, full size, full color with soft glow
                 primary_y = by0 + int(kh * 0.38)
+                glow_alpha = (*color[:3], 160)
+                font_chain.render(center_glow_draw, (cx, primary_y), primary_label,
+                                  fill=glow_alpha, anchor='mm')
                 font_chain.render(draw, (cx, primary_y), primary_label,
                                   fill=color, anchor='mm')
 
@@ -912,7 +919,70 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
 
             font = font_chain.select(label)
             x, y, anchor = text_anchor_pos(draw, label, font, position, bbox)
+
+            # Draw onto glow layer for center labels
+            if position == 'center':
+                glow_alpha = (*color[:3], 160)
+                font_chain.render(center_glow_draw, (x, y), label,
+                                  fill=glow_alpha, anchor=anchor)
+
             font_chain.render(draw, (x, y), label, fill=color, anchor=anchor)
+
+    # ─── Composite blurred glow under crisp text ───
+    # Extract alpha channel as grayscale mask, blur it, then apply as white glow
+    glow_mask = center_glow_layer.split()[3]
+    glow_radius = max(8, int(scale * 5))
+    blurred_mask = glow_mask.filter(ImageFilter.GaussianBlur(radius=glow_radius))
+    # Create white glow image with blurred alpha
+    white_glow = Image.new('RGBA', img.size, (255, 255, 255, 0))
+    white_glow.putalpha(blurred_mask)
+    img_rgba = img.convert('RGBA')
+    img = Image.alpha_composite(img_rgba, white_glow).convert('RGB')
+    draw = ImageDraw.Draw(img)
+
+    # Re-draw crisp center text on top of glow
+    for lc in layer_configs:
+        if lc['position'] != 'center':
+            continue
+        layer_idx = lc['index']
+        color = hex_to_rgb(lc['color'])
+        center_ratio = config.get('center_font_ratio', 0.18)
+        if 'font_ratio' in lc:
+            font_size = max(10, int(key_px * lc['font_ratio'] * font_scale))
+        elif 'font_size' in lc:
+            font_size = int(lc['font_size'] * font_scale)
+        else:
+            font_size = max(10, int(key_px * center_ratio * font_scale))
+        font_chain = load_font(font_size)
+        if layer_idx >= len(all_layers):
+            continue
+        layer_bindings = all_layers[layer_idx]['bindings']
+        sensor_bins = all_layers[layer_idx].get('sensor_bindings', [])
+        encoder_labels = {}
+        for enc_pos, sens_idx in {30: 0, 31: 1}.items():
+            if sens_idx < len(sensor_bins):
+                encoder_labels[enc_pos] = sensor_binding_label(sensor_bins[sens_idx])
+        for key_idx, bbox in enumerate(key_bboxes):
+            if key_idx >= len(layer_bindings):
+                continue
+            if key_idx in encoder_labels:
+                label = encoder_labels[key_idx]
+            else:
+                label = binding_to_label(layer_bindings[key_idx])
+            if not label:
+                continue
+            if '\n' in label:
+                lines = label.split('\n', 1)
+                bx0, by0, bx1, by1 = bbox
+                kh = by1 - by0
+                cx = bx0 + (bx1 - bx0) // 2
+                primary_y = by0 + int(kh * 0.38)
+                font_chain.render(draw, (cx, primary_y), lines[0],
+                                  fill=color, anchor='mm')
+            else:
+                font = font_chain.select(label)
+                x, y, anchor = text_anchor_pos(draw, label, font, 'center', bbox)
+                font_chain.render(draw, (x, y), label, fill=color, anchor=anchor)
 
     # ─── Legend ───
     POSITION_HINTS = {

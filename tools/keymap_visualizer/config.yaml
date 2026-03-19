@@ -1,8 +1,8 @@
 scale: 3.0
 center_font_ratio: 0.15
 corner_font_ratio: 0.15
-key_gap: 10
-corner_radius: 20
+key_gap: 13
+corner_radius: 30
 padding: 20
 font_scale: 1.4
 colors:
@@ -21,53 +21,53 @@ profiles:
     - name: Graphite
       index: 0
       position: center
-      color: '#e6edf3'
+      color: '#ffffff'
     - name: F-Keys
       index: 6
       position: tl
-      color: '#4a9be8'
+      color: '#90d4ff'
     - name: Symbols
       index: 3
       position: tr
-      color: '#d29922'
+      color: '#ff9478'
     - name: Numpad
       index: 5
       position: bl
-      color: '#3fb950'
+      color: '#50d868'
     - name: Settings
       index: 8
       position: br
-      color: '#f78166'
+      color: '#e8b030'
   win:
     description: Windows + Win layers
     layers:
     - name: Windows
       index: 2
       position: center
-      color: '#e6edf3'
+      color: '#ffffff'
     - name: F-Keys (Win)
       index: 7
       position: tl
-      color: '#4a9be8'
+      color: '#90d4ff'
     - name: Symbols (Win)
       index: 4
       position: tr
-      color: '#d29922'
+      color: '#ff9478'
     - name: Numpad
       index: 5
       position: bl
-      color: '#3fb950'
+      color: '#50d868'
     - name: Settings
       index: 8
       position: br
-      color: '#f78166'
+      color: '#e8b030'
   all_layers:
     description: All 9 layers in separate images
     layers:
     - name: Graphite
       index: 0
       position: center
-      color: '#e6edf3'
+      color: '#ffffff'
     - name: QWERTY (Mac)
       index: 1
       position: center
@@ -79,25 +79,25 @@ profiles:
     - name: Symbols (Mac)
       index: 3
       position: center
-      color: '#d29922'
+      color: '#ff9478'
     - name: Symbols (Win)
       index: 4
       position: center
-      color: '#d29922'
+      color: '#ff9478'
     - name: Numpad
       index: 5
       position: center
-      color: '#3fb950'
+      color: '#50d868'
     - name: F-Keys (Mac)
       index: 6
       position: center
-      color: '#4a9be8'
+      color: '#90d4ff'
     - name: F-Keys (Win)
       index: 7
       position: center
-      color: '#4a9be8'
+      color: '#90d4ff'
     - name: Settings
       index: 8
       position: center
-      color: '#f78166'
+      color: '#e8b030'
 default_profile: mac
