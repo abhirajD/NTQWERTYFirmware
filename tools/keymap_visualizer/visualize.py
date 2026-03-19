@@ -761,13 +761,13 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         key_bboxes.append((x0, y0, x1, y1))
 
     # ─── Draw glow behind layer trigger keys ───
-    glow_base = max(2, int(scale * 1.2))
+    glow_base = max(3, int(scale * 1.8))
     for i, bbox in enumerate(key_bboxes):
         if i not in trigger_tints:
             continue
         x0, y0, x1, y1 = bbox
         glow_color = trigger_tints[i]
-        for g_mult, g_alpha in [(4, 0.10), (3, 0.18), (2, 0.28), (1, 0.38)]:
+        for g_mult, g_alpha in [(5, 0.15), (4, 0.25), (3, 0.35), (2, 0.45), (1, 0.55)]:
             g = glow_base * g_mult
             g_rgb = dim_color(glow_color, bg_color, alpha=g_alpha)
             draw_rounded_rect(draw, (x0 - g, y0 - g, x1 + g, y1 + g),
@@ -778,8 +778,8 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         is_encoder = i in ENCODER_POSITIONS
 
         if i in trigger_tints:
-            fill = dim_color(trigger_tints[i], bg_color, alpha=0.15)
-            border = dim_color(trigger_tints[i], bg_color, alpha=0.55)
+            fill = dim_color(trigger_tints[i], bg_color, alpha=0.30)
+            border = dim_color(trigger_tints[i], bg_color, alpha=0.70)
         elif is_encoder:
             fill = enc_fill
             border = enc_border
@@ -797,7 +797,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         x0, y0, x1, y1 = bbox
         stripe_h = max(3, int(scale * 0.6))
         stripe_inset = max(4, int(scale * 1.5))
-        stripe_color = dim_color(trigger_tints[i], bg_color, alpha=0.65)
+        stripe_color = dim_color(trigger_tints[i], bg_color, alpha=0.80)
         draw.rounded_rectangle(
             (x0 + stripe_inset, y1 - stripe_h - stripe_inset // 2,
              x1 - stripe_inset, y1 - stripe_inset // 2),
