@@ -1,18 +1,18 @@
 scale: 3.0
 center_font_ratio: 0.15
-corner_font_ratio: 0.10
+corner_font_ratio: 0.15
 key_gap: 10
 corner_radius: 20
 padding: 20
-font_scale: 1.0
+font_scale: 1.4
 colors:
-  background: '#0d1117'
-  key_fill: '#161b22'
-  key_border: '#30363d'
-  encoder_fill: '#1c2333'
-  encoder_border: '#3d5a80'
-  title: '#e6edf3'
-  legend_text: '#8b949e'
+  background: '#333338'
+  key_fill: '#484850'
+  key_border: '#686870'
+  encoder_fill: '#3e4450'
+  encoder_border: '#686870'
+  title: '#f0f0f0'
+  legend_text: '#b0b0b8'
 title: "NTQWERTY Keymap \u2014 Rolio 46"
 profiles:
   mac:
@@ -25,7 +25,7 @@ profiles:
     - name: F-Keys
       index: 6
       position: tl
-      color: '#58a6ff'
+      color: '#4a9be8'
     - name: Symbols
       index: 3
       position: tr
@@ -48,7 +48,7 @@ profiles:
     - name: F-Keys (Win)
       index: 7
       position: tl
-      color: '#58a6ff'
+      color: '#4a9be8'
     - name: Symbols (Win)
       index: 4
       position: tr
@@ -91,11 +91,11 @@ profiles:
     - name: F-Keys (Mac)
       index: 6
       position: center
-      color: '#58a6ff'
+      color: '#4a9be8'
     - name: F-Keys (Win)
       index: 7
       position: center
-      color: '#58a6ff'
+      color: '#4a9be8'
     - name: Settings
       index: 8
       position: center
