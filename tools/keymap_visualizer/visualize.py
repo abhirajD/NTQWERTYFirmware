@@ -812,7 +812,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         cx = (x0 + x1) // 2
         dot_y = y1 - int(scale * 5.5)
         dot_r = max(5, int(scale * 4.0))
-        dot_color = '#a0a0a8'
+        dot_color = '#ffffff'
         draw.ellipse((cx - dot_r, dot_y - dot_r, cx + dot_r, dot_y + dot_r),
                      fill=dot_color)
 
