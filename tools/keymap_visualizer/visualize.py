@@ -43,6 +43,7 @@ PHYSICAL_KEYS = [
 
 KEY_SIZE = 100  # layout units per key
 ENCODER_POSITIONS = {30, 31, 42, 43}
+HOMING_POSITIONS = {16, 19}  # S and H keys — index finger homing bumps
 
 # ─── ZMK Keycode → Human-Readable Label ───
 KEYCODE_LABELS = {
@@ -802,6 +803,18 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
              x1 - stripe_inset, y1 - stripe_inset // 2),
             radius=max(1, stripe_h // 2), fill=stripe_color
         )
+
+    # ─── Draw homing dots on index-finger keys ───
+    for i, bbox in enumerate(key_bboxes):
+        if i not in HOMING_POSITIONS:
+            continue
+        x0, y0, x1, y1 = bbox
+        cx = (x0 + x1) // 2
+        dot_y = y1 - int(scale * 5.5)
+        dot_r = max(5, int(scale * 4.0))
+        dot_color = dim_color(key_border, bg_color, alpha=0.85)
+        draw.ellipse((cx - dot_r, dot_y - dot_r, cx + dot_r, dot_y + dot_r),
+                     fill=dot_color)
 
     # ─── Draw layer labels on keys ───
     for lc in layer_configs:
