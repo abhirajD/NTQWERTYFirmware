@@ -252,7 +252,8 @@ def binding_to_label(binding):
     if behavior == '&btkp':
         profile = args[0] if args else '?'
         key = keycode_label(args[1]) if len(args) > 1 else '?'
-        return f"{key}\n\uf293{profile}"
+        bt_num = int(profile) + 1
+        return f"{key}\n\uf293{bt_num}"
 
     # USB/Output toggle with escape
     if behavior == '&usb_tog':
@@ -737,8 +738,8 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
 
     bg_color = hex_to_rgb(colors.get('background', '#0d1117'))
     key_fill = hex_to_rgb(colors.get('key_fill', '#161b22'))
-    key_fill_a = hex_to_rgb(colors.get('key_fill_zone_a', key_fill))
-    key_fill_b = hex_to_rgb(colors.get('key_fill_zone_b', key_fill))
+    key_fill_a = hex_to_rgb(colors.get('key_fill_zone_a', colors.get('key_fill', '#161b22')))
+    key_fill_b = hex_to_rgb(colors.get('key_fill_zone_b', colors.get('key_fill', '#161b22')))
     key_border = hex_to_rgb(colors.get('key_border', '#30363d'))
     enc_fill = hex_to_rgb(colors.get('encoder_fill', '#1c2333'))
     enc_border = hex_to_rgb(colors.get('encoder_border', '#3d5a80'))
@@ -994,12 +995,18 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         text_w = text_bbox[2] - text_bbox[0] if text_bbox else len(name) * 8
         legend_x += 2 * dot_r + 8 + text_w + 30
 
-    # ─── Behavior notes — single line with colored dot prefixes ───
-    notes_parts = [
+    # ─── Behavior notes — two rows of compact notes ───
+    notes_row1 = [
         ('#ffffff', '\u232B tap=char \u00b7 hold=word'),
-        ('#ffffff', '\u21E7 tap=shift \u00b7 hold=capsword'),
+        ('#ffffff', '\u2326 tap=char \u00b7 hold=word'),
+        ('#ffffff', '\u21E7 hold=shift \u00b7 tap=capsword'),
         ('#ffb347', 'Sym tap=symbols \u00b7 2\u00d7tap=pin numpad'),
-        ('#ffffff', 'Hold home row \u2192 modifier (no pinky reach)'),
+        ('#ffffff', '\u2318 tap=app menu \u00b7 hold=\u2318'),
+    ]
+    notes_row2 = [
+        ('#ff6b6b', '\u26A0 F1\u2013F5 hold=switch BT device'),
+        ('#ff6b6b', '\u26A0 Esc hold=toggle USB/BT'),
+        ('#ff6b6b', '\u26A0 BT Clear hold 2s=unpair'),
     ]
     notes_size = int(22 * font_scale)
     notes_chain = load_font(notes_size)
@@ -1011,29 +1018,34 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
     draw.line([(padding, separator_y), (img_w - padding, separator_y)],
               fill=sep_color, width=1)
 
-    nx = padding
     sep_w = max(3, int(scale * 1.0))
     sep_h = int(notes_size * 0.8)
     note_dot_r = 7
-    for idx, (dot_color, part) in enumerate(notes_parts):
-        if idx > 0:
-            # Rectangle separator
-            draw.rectangle(
-                (nx, int(notes_y - sep_h // 2),
-                 nx + sep_w, int(notes_y + sep_h // 2)),
-                fill=sep_color)
-            nx += sep_w + 16
-        # Colored dot prefix
-        dc = hex_to_rgb(dot_color)
-        draw.ellipse((nx, int(notes_y - note_dot_r),
-                       nx + 2 * note_dot_r, int(notes_y + note_dot_r)),
-                      fill=dc)
-        nx += 2 * note_dot_r + 8
-        nf = notes_chain.select(part)
-        draw.text((nx, notes_y), part, fill=note_color, font=nf, anchor='lm')
-        tb = nf.getbbox(part)
-        tw = tb[2] - tb[0] if tb else len(part) * 10
-        nx += tw + 16
+
+    def draw_notes_row(parts, y):
+        nx = padding
+        for idx, (dot_color, part) in enumerate(parts):
+            if idx > 0:
+                # Rectangle separator
+                draw.rectangle(
+                    (nx, int(y - sep_h // 2),
+                     nx + sep_w, int(y + sep_h // 2)),
+                    fill=sep_color)
+                nx += sep_w + 16
+            # Colored dot prefix
+            dc = hex_to_rgb(dot_color)
+            draw.ellipse((nx, int(y - note_dot_r),
+                           nx + 2 * note_dot_r, int(y + note_dot_r)),
+                          fill=dc)
+            nx += 2 * note_dot_r + 8
+            nf = notes_chain.select(part)
+            draw.text((nx, y), part, fill=note_color, font=nf, anchor='lm')
+            tb = nf.getbbox(part)
+            tw = tb[2] - tb[0] if tb else len(part) * 10
+            nx += tw + 16
+
+    draw_notes_row(notes_row1, notes_y)
+    draw_notes_row(notes_row2, notes_y + int(notes_size * 1.6))
 
     # Save
     img.save(str(output_path), 'PNG')

@@ -9,8 +9,8 @@ colors:
   background: '#333338'
   key_fill: '#484850'
   key_border: '#686870'
-  key_fill_zone_a: '#434348'
-  key_fill_zone_b: '#4e4e56'
+  key_fill_zone_a: '#3e3e44'
+  key_fill_zone_b: '#555560'
   encoder_fill: '#3e4450'
   encoder_border: '#686870'
   title: '#f0f0f0'
@@ -42,8 +42,8 @@ profiles:
     - name: Settings
       index: 8
       position: bl
-      color: '#e8c8d8'
-      opacity: 0.90
+      color: '#c0a8b5'
+      opacity: 0.70
   win:
     description: Windows + Win layers
     layers:
@@ -69,8 +69,8 @@ profiles:
     - name: Settings
       index: 8
       position: bl
-      color: '#e8c8d8'
-      opacity: 0.90
+      color: '#c0a8b5'
+      opacity: 0.70
   all_layers:
     description: All 9 layers in separate images
     layers:
