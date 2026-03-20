@@ -889,7 +889,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
                 sec_size = max(10, int(font_size * 0.55))
                 sec_chain = load_font(sec_size)
                 sec_font = sec_chain.select(secondary_label)
-                sec_color = dim_color(color, bg_color, alpha=0.55)
+                sec_color = dim_color(color, bg_color, alpha=0.80)
                 sec_y = by0 + int(kh * 0.72)
 
                 # Draw pill background behind secondary text
@@ -897,7 +897,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
                 pill_pad = max(4, sec_size // 3)
                 pill_h = sec_size + pill_pad
                 pill_w = tw + pill_pad * 2
-                pill_color = dim_color(color, bg_color, alpha=0.10)
+                pill_color = dim_color(color, bg_color, alpha=0.25)
                 draw.rounded_rectangle(
                     (int(cx - pill_w / 2), int(sec_y - pill_h / 2),
                      int(cx + pill_w / 2), int(sec_y + pill_h / 2)),
