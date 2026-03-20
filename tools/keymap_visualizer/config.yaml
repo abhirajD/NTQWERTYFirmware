@@ -26,18 +26,22 @@ profiles:
       index: 6
       position: tl
       color: '#90d4ff'
+      opacity: 0.85
     - name: Symbols
       index: 3
       position: tr
-      color: '#ff9478'
+      color: '#ffb347'
+      opacity: 1.0
     - name: Numpad
       index: 5
       position: bl
-      color: '#50d868'
+      color: '#6bc5b0'
+      opacity: 0.65
     - name: Settings
       index: 8
       position: br
-      color: '#e870a0'
+      color: '#a08898'
+      opacity: 0.45
   win:
     description: Windows + Win layers
     layers:
@@ -49,18 +53,22 @@ profiles:
       index: 7
       position: tl
       color: '#90d4ff'
+      opacity: 0.85
     - name: Symbols (Win)
       index: 4
       position: tr
-      color: '#ff9478'
+      color: '#ffb347'
+      opacity: 1.0
     - name: Numpad
       index: 5
       position: bl
-      color: '#50d868'
+      color: '#6bc5b0'
+      opacity: 0.65
     - name: Settings
       index: 8
       position: br
-      color: '#e870a0'
+      color: '#a08898'
+      opacity: 0.45
   all_layers:
     description: All 9 layers in separate images
     layers:
@@ -79,15 +87,15 @@ profiles:
     - name: Symbols (Mac)
       index: 3
       position: center
-      color: '#ff9478'
+      color: '#ffb347'
     - name: Symbols (Win)
       index: 4
       position: center
-      color: '#ff9478'
+      color: '#ffb347'
     - name: Numpad
       index: 5
       position: center
-      color: '#50d868'
+      color: '#6bc5b0'
     - name: F-Keys (Mac)
       index: 6
       position: center
@@ -99,5 +107,5 @@ profiles:
     - name: Settings
       index: 8
       position: center
-      color: '#e870a0'
+      color: '#a08898'
 default_profile: mac
