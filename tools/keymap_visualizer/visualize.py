@@ -163,6 +163,13 @@ def keycode_label(code):
     return KEYCODE_LABELS.get(code, code)
 
 
+# Shifted symbol variants for punctuation keys (shown as pill badge)
+SHIFTED_SYMBOLS = {
+    'GRAVE': '~', 'SEMI': ':', 'COMMA': '<',
+    'DOT': '>', 'FSLH': '?', 'SQT': '"',
+}
+
+
 def layer_abbrev(layer_name):
     """Short abbreviation for layer names."""
     return LAYER_ABBREVS.get(layer_name, layer_name[:3])
@@ -188,9 +195,15 @@ def binding_to_label(binding):
     if behavior == '&none':
         return '\u2715'
 
-    # Simple key press
+    # Simple key press — show shifted variant for punctuation keys
     if behavior == '&kp':
-        return keycode_label(args[0]) if args else '?'
+        if not args:
+            return '?'
+        label = keycode_label(args[0])
+        shifted = SHIFTED_SYMBOLS.get(args[0])
+        if shifted:
+            return f"{label}\n{shifted}"
+        return label
 
     # Layer-tap: hold=layer, tap=key
     if behavior == '&lt':
@@ -740,7 +753,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
     max_y = max(y for x, y in PHYSICAL_KEYS) + KEY_SIZE
 
     title_height = 70
-    legend_height = 110
+    legend_height = 140
     img_w = int(max_x * scale) + 2 * padding
     img_h = int(max_y * scale) + 2 * padding + title_height + legend_height
 
@@ -957,8 +970,8 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         'center': '', 'tl': '\u2196', 'tr': '\u2197',
         'bl': '\u2199', 'br': '\u2198',
     }
-    legend_chain = load_font(int(18 * font_scale))
-    legend_y = img_h - legend_height + 24
+    legend_chain = load_font(int(24 * font_scale))
+    legend_y = img_h - legend_height + 28
     legend_x = padding
 
     for lc in layer_configs:
@@ -967,7 +980,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         name = f"{lc['name']} {hint}" if hint else lc['name']
 
         # Draw colored dot
-        dot_r = 7
+        dot_r = 10
         draw.ellipse((legend_x, legend_y - dot_r, legend_x + 2 * dot_r,
                        legend_y + dot_r), fill=color)
 
@@ -981,27 +994,28 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         text_w = text_bbox[2] - text_bbox[0] if text_bbox else len(name) * 8
         legend_x += 2 * dot_r + 8 + text_w + 30
 
-    # ─── Behavior notes — single line with rectangle separators ───
+    # ─── Behavior notes — single line with colored dot prefixes ───
     notes_parts = [
-        '\u232B tap=char \u00b7 hold=word',
-        '\u21E7 tap=shift \u00b7 hold=capsword',
-        'Sym tap=symbols \u00b7 2\u00d7tap=pin numpad',
-        'Hold home row \u2192 modifier (no pinky reach)',
+        ('#ffffff', '\u232B tap=char \u00b7 hold=word'),
+        ('#ffffff', '\u21E7 tap=shift \u00b7 hold=capsword'),
+        ('#ffb347', 'Sym tap=symbols \u00b7 2\u00d7tap=pin numpad'),
+        ('#ffffff', 'Hold home row \u2192 modifier (no pinky reach)'),
     ]
-    notes_size = int(20 * font_scale)
+    notes_size = int(22 * font_scale)
     notes_chain = load_font(notes_size)
-    notes_y = legend_y + 36
+    notes_y = legend_y + 42
     note_color = dim_color(legend_color, bg_color, alpha=0.85)
     sep_color = dim_color(legend_color, bg_color, alpha=0.30)
 
-    separator_y = notes_y - 14
+    separator_y = notes_y - 16
     draw.line([(padding, separator_y), (img_w - padding, separator_y)],
               fill=sep_color, width=1)
 
     nx = padding
     sep_w = max(3, int(scale * 1.0))
     sep_h = int(notes_size * 0.8)
-    for idx, part in enumerate(notes_parts):
+    note_dot_r = 7
+    for idx, (dot_color, part) in enumerate(notes_parts):
         if idx > 0:
             # Rectangle separator
             draw.rectangle(
@@ -1009,6 +1023,12 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
                  nx + sep_w, int(notes_y + sep_h // 2)),
                 fill=sep_color)
             nx += sep_w + 16
+        # Colored dot prefix
+        dc = hex_to_rgb(dot_color)
+        draw.ellipse((nx, int(notes_y - note_dot_r),
+                       nx + 2 * note_dot_r, int(notes_y + note_dot_r)),
+                      fill=dc)
+        nx += 2 * note_dot_r + 8
         nf = notes_chain.select(part)
         draw.text((nx, notes_y), part, fill=note_color, font=nf, anchor='lm')
         tb = nf.getbbox(part)

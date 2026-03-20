@@ -27,8 +27,8 @@ profiles:
     - name: F-Keys
       index: 6
       position: tl
-      color: '#90d4ff'
-      opacity: 0.85
+      color: '#98dcff'
+      opacity: 0.90
     - name: Symbols
       index: 3
       position: tr
@@ -36,14 +36,14 @@ profiles:
       opacity: 1.0
     - name: Numpad
       index: 5
-      position: bl
-      color: '#6bc5b0'
-      opacity: 0.65
+      position: br
+      color: '#90e8d0'
+      opacity: 0.80
     - name: Settings
       index: 8
-      position: br
-      color: '#a08898'
-      opacity: 0.45
+      position: bl
+      color: '#e8c8d8'
+      opacity: 0.90
   win:
     description: Windows + Win layers
     layers:
@@ -54,8 +54,8 @@ profiles:
     - name: F-Keys (Win)
       index: 7
       position: tl
-      color: '#90d4ff'
-      opacity: 0.85
+      color: '#98dcff'
+      opacity: 0.90
     - name: Symbols (Win)
       index: 4
       position: tr
@@ -63,14 +63,14 @@ profiles:
       opacity: 1.0
     - name: Numpad
       index: 5
-      position: bl
-      color: '#6bc5b0'
-      opacity: 0.65
+      position: br
+      color: '#90e8d0'
+      opacity: 0.80
     - name: Settings
       index: 8
-      position: br
-      color: '#a08898'
-      opacity: 0.45
+      position: bl
+      color: '#e8c8d8'
+      opacity: 0.90
   all_layers:
     description: All 9 layers in separate images
     layers:
