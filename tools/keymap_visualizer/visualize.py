@@ -720,7 +720,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
     max_y = max(y for x, y in PHYSICAL_KEYS) + KEY_SIZE
 
     title_height = 70
-    legend_height = 160
+    legend_height = 110
     img_w = int(max_x * scale) + 2 * padding
     img_h = int(max_y * scale) + 2 * padding + title_height + legend_height
 
@@ -1030,24 +1030,39 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         text_w = text_bbox[2] - text_bbox[0] if text_bbox else len(name) * 8
         legend_x += 2 * dot_r + 8 + text_w + 30
 
-    # ─── Behavior notes ───
-    notes = [
-        '\u232B  tap = delete char · hold = delete word',
-        '\u21E7  tap = shift · hold = capsword (all caps until space)',
-        'Sym  tap = symbols layer · 2\u00d7tap = pin numpad',
-        'Home row hold: N=\u2318  R=\u2325  T=\u2303  S=\u21E7 (left)  H=\u21E7  A=\u2303  E=\u2325  I=\u2318 (right)',
+    # ─── Behavior notes — single line with rectangle separators ───
+    notes_parts = [
+        '\u232B tap=char \u00b7 hold=word',
+        '\u21E7 tap=shift \u00b7 hold=capsword',
+        'Sym tap=symbols \u00b7 2\u00d7tap=pin numpad',
+        'Hold home row \u2192 modifier (no pinky reach)',
     ]
-    notes_chain = load_font(int(18 * font_scale))
+    notes_size = int(20 * font_scale)
+    notes_chain = load_font(notes_size)
     notes_y = legend_y + 36
-    note_color = dim_color(legend_color, bg_color, alpha=0.80)
-    separator_y = notes_y - 12
+    note_color = dim_color(legend_color, bg_color, alpha=0.85)
+    sep_color = dim_color(legend_color, bg_color, alpha=0.30)
+
+    separator_y = notes_y - 14
     draw.line([(padding, separator_y), (img_w - padding, separator_y)],
-              fill=dim_color(legend_color, bg_color, alpha=0.20), width=1)
-    for note in notes:
-        notes_font = notes_chain.select(note)
-        draw.text((padding, notes_y), note,
-                  fill=note_color, font=notes_font, anchor='la')
-        notes_y += int(26 * font_scale)
+              fill=sep_color, width=1)
+
+    nx = padding
+    sep_w = max(3, int(scale * 1.0))
+    sep_h = int(notes_size * 0.8)
+    for idx, part in enumerate(notes_parts):
+        if idx > 0:
+            # Rectangle separator
+            draw.rectangle(
+                (nx, int(notes_y - sep_h // 2),
+                 nx + sep_w, int(notes_y + sep_h // 2)),
+                fill=sep_color)
+            nx += sep_w + 16
+        nf = notes_chain.select(part)
+        draw.text((nx, notes_y), part, fill=note_color, font=nf, anchor='lm')
+        tb = nf.getbbox(part)
+        tw = tb[2] - tb[0] if tb else len(part) * 10
+        nx += tw + 16
 
     # Save
     img.save(str(output_path), 'PNG')

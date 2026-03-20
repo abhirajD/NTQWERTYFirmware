@@ -37,7 +37,7 @@ profiles:
     - name: Settings
       index: 8
       position: br
-      color: '#e8b030'
+      color: '#e870a0'
   win:
     description: Windows + Win layers
     layers:
@@ -60,7 +60,7 @@ profiles:
     - name: Settings
       index: 8
       position: br
-      color: '#e8b030'
+      color: '#e870a0'
   all_layers:
     description: All 9 layers in separate images
     layers:
@@ -99,5 +99,5 @@ profiles:
     - name: Settings
       index: 8
       position: center
-      color: '#e8b030'
+      color: '#e870a0'
 default_profile: mac
