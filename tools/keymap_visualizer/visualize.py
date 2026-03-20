@@ -45,6 +45,24 @@ KEY_SIZE = 100  # layout units per key
 ENCODER_POSITIONS = {30, 31, 42, 43}
 HOMING_POSITIONS = {16, 19}  # S and H keys — index finger homing bumps
 
+# Finger zone mapping: key position → zone ('a'=darker, 'b'=lighter)
+# Alternating by finger column: pinky=a, ring=b, middle=a, index+inner=b, thumb=a
+FINGER_ZONES = {}
+for _row_start in (0, 12, 24):  # rows 0-2: 6 keys per half
+    # Left half: positions 0-5 → pinky(0) ring(1) mid(2) idx(3) idx(4) inner(5)
+    for _col, _zone in [(0, 'a'), (1, 'b'), (2, 'a'), (3, 'b'), (4, 'b'), (5, 'b')]:
+        FINGER_ZONES[_row_start + _col] = _zone
+    # Right half: positions 6-11 → inner(6) idx(7) idx(8) mid(9) ring(10) pinky(11)
+    for _col, _zone in [(6, 'b'), (7, 'b'), (8, 'b'), (9, 'a'), (10, 'b'), (11, 'a')]:
+        FINGER_ZONES[_row_start + _col] = _zone
+# Encoders (positions 30-31, 42-43): neutral zone a
+for _enc in (30, 31, 42, 43):
+    FINGER_ZONES[_enc] = 'a'
+# Thumb cluster (positions 38-41, 44-47): zone a (darker, recede)
+for _thumb in range(38, 48):
+    if _thumb not in (42, 43):  # skip encoders, already set
+        FINGER_ZONES[_thumb] = 'a'
+
 # ─── ZMK Keycode → Human-Readable Label ───
 KEYCODE_LABELS = {
     # Numbers
@@ -706,6 +724,8 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
 
     bg_color = hex_to_rgb(colors.get('background', '#0d1117'))
     key_fill = hex_to_rgb(colors.get('key_fill', '#161b22'))
+    key_fill_a = hex_to_rgb(colors.get('key_fill_zone_a', key_fill))
+    key_fill_b = hex_to_rgb(colors.get('key_fill_zone_b', key_fill))
     key_border = hex_to_rgb(colors.get('key_border', '#30363d'))
     enc_fill = hex_to_rgb(colors.get('encoder_fill', '#1c2333'))
     enc_border = hex_to_rgb(colors.get('encoder_border', '#3d5a80'))
@@ -784,7 +804,8 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
             fill = enc_fill
             border = enc_border
         else:
-            fill = key_fill
+            zone = FINGER_ZONES.get(i, 'a')
+            fill = key_fill_a if zone == 'a' else key_fill_b
             border = key_border
 
         draw_rounded_rect(draw, bbox, corner_radius,

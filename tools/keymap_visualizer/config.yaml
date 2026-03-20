@@ -9,6 +9,8 @@ colors:
   background: '#333338'
   key_fill: '#484850'
   key_border: '#686870'
+  key_fill_zone_a: '#434348'
+  key_fill_zone_b: '#4e4e56'
   encoder_fill: '#3e4450'
   encoder_border: '#686870'
   title: '#f0f0f0'
