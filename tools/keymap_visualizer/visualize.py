@@ -811,11 +811,11 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         x0, y0, x1, y1 = bbox
         # Bright border to make homing keys stand out as visual anchors
         draw_rounded_rect(draw, bbox, corner_radius,
-                          outline='#ffffff', width=max(2, int(scale * 0.8)))
+                          outline='#ffffff', width=max(3, int(scale * 2.0)))
         # Homing bar at bottom center (like physical keycap bump)
         cx = (x0 + x1) // 2
-        bar_w = max(12, int((x1 - x0) * 0.30))
-        bar_h = max(3, int(scale * 1.2))
+        bar_w = max(16, int((x1 - x0) * 0.45))
+        bar_h = max(5, int(scale * 2.5))
         bar_y = y1 - int(scale * 4)
         draw.rounded_rectangle(
             (cx - bar_w // 2, bar_y - bar_h // 2,
