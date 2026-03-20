@@ -668,7 +668,7 @@ def draw_rounded_rect(draw, xy, radius, fill=None, outline=None, width=1):
     draw.rounded_rectangle(xy, radius=r, fill=fill, outline=outline, width=width)
 
 
-def text_anchor_pos(draw, text, font, position, key_bbox, padding=8):
+def text_anchor_pos(draw, text, font, position, key_bbox, padding=12):
     """Calculate text position within a key based on position name.
 
     Returns (x, y, anchor) for ImageDraw.text().
@@ -720,7 +720,7 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
     max_y = max(y for x, y in PHYSICAL_KEYS) + KEY_SIZE
 
     title_height = 70
-    legend_height = 70
+    legend_height = 160
     img_w = int(max_x * scale) + 2 * padding
     img_h = int(max_y * scale) + 2 * padding + title_height + legend_height
 
@@ -804,17 +804,24 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
             radius=max(1, stripe_h // 2), fill=stripe_color
         )
 
-    # ─── Draw homing dots on index-finger keys ───
+    # ─── Draw homing indicators on index-finger keys ───
     for i, bbox in enumerate(key_bboxes):
         if i not in HOMING_POSITIONS:
             continue
         x0, y0, x1, y1 = bbox
+        # Bright border to make homing keys stand out as visual anchors
+        draw_rounded_rect(draw, bbox, corner_radius,
+                          outline='#ffffff', width=max(2, int(scale * 0.8)))
+        # Homing bar at bottom center (like physical keycap bump)
         cx = (x0 + x1) // 2
-        dot_y = y1 - int(scale * 5.5)
-        dot_r = max(5, int(scale * 4.0))
-        dot_color = '#ffffff'
-        draw.ellipse((cx - dot_r, dot_y - dot_r, cx + dot_r, dot_y + dot_r),
-                     fill=dot_color)
+        bar_w = max(12, int((x1 - x0) * 0.30))
+        bar_h = max(3, int(scale * 1.2))
+        bar_y = y1 - int(scale * 4)
+        draw.rounded_rectangle(
+            (cx - bar_w // 2, bar_y - bar_h // 2,
+             cx + bar_w // 2, bar_y + bar_h // 2),
+            radius=bar_h // 2, fill='#ffffff'
+        )
 
     # ─── Draw layer labels on keys ───
     # Two-pass for center labels: 1) blurred glow layer, 2) crisp text on top
@@ -869,45 +876,50 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
 
             # Center position with multi-line: split primary/secondary
             if position == 'center' and '\n' in label:
-                lines = label.split('\n', 1)
-                primary_label = lines[0]
-                secondary_label = lines[1]
+                # Suppress pill on trigger-tinted keys — glow already identifies layer
+                if key_idx in trigger_tints:
+                    label = label.split('\n')[0]
+                    # Fall through to single-label rendering below
+                else:
+                    lines = label.split('\n', 1)
+                    primary_label = lines[0]
+                    secondary_label = lines[1]
 
-                bx0, by0, bx1, by1 = bbox
-                kh = by1 - by0
-                cx = bx0 + (bx1 - bx0) // 2
+                    bx0, by0, bx1, by1 = bbox
+                    kh = by1 - by0
+                    cx = bx0 + (bx1 - bx0) // 2
 
-                # Primary: shifted up, full size, full color with soft glow
-                primary_y = by0 + int(kh * 0.38)
-                glow_alpha = (*color[:3], 160)
-                font_chain.render(center_glow_draw, (cx, primary_y), primary_label,
-                                  fill=glow_alpha, anchor='mm')
-                font_chain.render(draw, (cx, primary_y), primary_label,
-                                  fill=color, anchor='mm')
+                    # Primary: shifted up, full size, full color with soft glow
+                    primary_y = by0 + int(kh * 0.38)
+                    glow_alpha = (*color[:3], 160)
+                    font_chain.render(center_glow_draw, (cx, primary_y), primary_label,
+                                      fill=glow_alpha, anchor='mm')
+                    font_chain.render(draw, (cx, primary_y), primary_label,
+                                      fill=color, anchor='mm')
 
-                # Secondary: shifted down, ~55% size, in pill badge
-                sec_size = max(10, int(font_size * 0.55))
-                sec_chain = load_font(sec_size)
-                sec_font = sec_chain.select(secondary_label)
-                sec_color = dim_color(color, bg_color, alpha=0.80)
-                sec_y = by0 + int(kh * 0.72)
+                    # Secondary: shifted down, ~55% size, in pill badge
+                    sec_size = max(10, int(font_size * 0.55))
+                    sec_chain = load_font(sec_size)
+                    sec_font = sec_chain.select(secondary_label)
+                    sec_color = dim_color(color, bg_color, alpha=0.80)
+                    sec_y = by0 + int(kh * 0.72)
 
-                # Draw pill background behind secondary text
-                tw = int(sec_font.getlength(secondary_label))
-                pill_pad = max(4, sec_size // 3)
-                pill_h = sec_size + pill_pad
-                pill_w = tw + pill_pad * 2
-                pill_color = dim_color(color, bg_color, alpha=0.25)
-                draw.rounded_rectangle(
-                    (int(cx - pill_w / 2), int(sec_y - pill_h / 2),
-                     int(cx + pill_w / 2), int(sec_y + pill_h / 2)),
-                    radius=min(pill_h // 2, pill_pad),
-                    fill=pill_color
-                )
+                    # Draw pill background behind secondary text
+                    tw = int(sec_font.getlength(secondary_label))
+                    pill_pad = max(4, sec_size // 3)
+                    pill_h = sec_size + pill_pad
+                    pill_w = tw + pill_pad * 2
+                    pill_color = dim_color(color, bg_color, alpha=0.25)
+                    draw.rounded_rectangle(
+                        (int(cx - pill_w / 2), int(sec_y - pill_h / 2),
+                         int(cx + pill_w / 2), int(sec_y + pill_h / 2)),
+                        radius=min(pill_h // 2, pill_pad),
+                        fill=pill_color
+                    )
 
-                sec_chain.render(draw, (cx, sec_y), secondary_label,
-                                 fill=sec_color, anchor='mm')
-                continue
+                    sec_chain.render(draw, (cx, sec_y), secondary_label,
+                                     fill=sec_color, anchor='mm')
+                    continue
 
             # For multi-line labels in corner positions, take only first line
             if position != 'center' and '\n' in label:
@@ -972,13 +984,18 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
             if not label:
                 continue
             if '\n' in label:
-                lines = label.split('\n', 1)
-                bx0, by0, bx1, by1 = bbox
-                kh = by1 - by0
-                cx = bx0 + (bx1 - bx0) // 2
-                primary_y = by0 + int(kh * 0.38)
-                font_chain.render(draw, (cx, primary_y), lines[0],
-                                  fill=color, anchor='mm')
+                # Suppress pill on trigger keys in re-draw pass too
+                if key_idx in trigger_tints:
+                    label = label.split('\n')[0]
+                else:
+                    lines = label.split('\n', 1)
+                    bx0, by0, bx1, by1 = bbox
+                    kh = by1 - by0
+                    cx = bx0 + (bx1 - bx0) // 2
+                    primary_y = by0 + int(kh * 0.38)
+                    font_chain.render(draw, (cx, primary_y), lines[0],
+                                      fill=color, anchor='mm')
+                    continue
             else:
                 font = font_chain.select(label)
                 x, y, anchor = text_anchor_pos(draw, label, font, 'center', bbox)
@@ -1012,6 +1029,25 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         text_bbox = legend_font.getbbox(name)
         text_w = text_bbox[2] - text_bbox[0] if text_bbox else len(name) * 8
         legend_x += 2 * dot_r + 8 + text_w + 30
+
+    # ─── Behavior notes ───
+    notes = [
+        '\u232B  tap = delete char · hold = delete word',
+        '\u21E7  tap = shift · hold = capsword (all caps until space)',
+        'Sym  tap = symbols layer · 2\u00d7tap = pin numpad',
+        'Home row hold: N=\u2318  R=\u2325  T=\u2303  S=\u21E7 (left)  H=\u21E7  A=\u2303  E=\u2325  I=\u2318 (right)',
+    ]
+    notes_chain = load_font(int(18 * font_scale))
+    notes_y = legend_y + 36
+    note_color = dim_color(legend_color, bg_color, alpha=0.80)
+    separator_y = notes_y - 12
+    draw.line([(padding, separator_y), (img_w - padding, separator_y)],
+              fill=dim_color(legend_color, bg_color, alpha=0.20), width=1)
+    for note in notes:
+        notes_font = notes_chain.select(note)
+        draw.text((padding, notes_y), note,
+                  fill=note_color, font=notes_font, anchor='la')
+        notes_y += int(26 * font_scale)
 
     # Save
     img.save(str(output_path), 'PNG')
