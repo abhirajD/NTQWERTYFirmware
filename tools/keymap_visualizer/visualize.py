@@ -195,14 +195,14 @@ def binding_to_label(binding):
     if behavior == '&none':
         return '\u2715'
 
-    # Simple key press — show shifted variant for punctuation keys
+    # Simple key press — show shifted variant inline (like Mac keycaps)
     if behavior == '&kp':
         if not args:
             return '?'
         label = keycode_label(args[0])
         shifted = SHIFTED_SYMBOLS.get(args[0])
         if shifted:
-            return f"{label}\n{shifted}"
+            return f"{label}{shifted}"
         return label
 
     # Layer-tap: hold=layer, tap=key
