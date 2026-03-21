@@ -78,6 +78,15 @@
             flavor = "tap-preferred";
             bindings = <&kpss>, <&kp>;
         };
+        // Tap = sticky shift (one char), Hold = continuous shift
+        sks: sks {
+            display-name = "Sticky / Hold Shift";
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <200>;
+            bindings = <&kp>, <&sk>;
+        };
         // Shift / Capsword
          scw: scw {
             display-name = "Hold Shift / Tap Capsword";

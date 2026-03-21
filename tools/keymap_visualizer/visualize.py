@@ -72,7 +72,7 @@ KEYCODE_LABELS = {
     'GRAVE': '`', 'MINUS': '-', 'EQUAL': '=',
     'LBKT': '[', 'RBKT': ']', 'BACKSLASH': '\\',
     'SEMI': ';', 'SQT': "'", 'COMMA': ',', 'DOT': '.', 'FSLH': '/',
-    'UNDER': '_', 'PLUS': '+',
+    'UNDER': '_', 'PLUS': '+', 'TILDE': '~',
     'LEFT_BRACE': '{', 'RIGHT_BRACE': '}', 'PIPE': '|',
     'EXCL': '!', 'AT': '@', 'HASH': '#', 'DLLR': '$', 'PRCNT': '%',
     'CARET': '^', 'AMPERSAND': '&', 'STAR': '*', 'LPAR': '(', 'RPAR': ')',
@@ -243,6 +243,10 @@ def binding_to_label(binding):
     # Shift/capsword hold-tap
     if behavior == '&scw':
         return '\u21E7\nCW'
+
+    # Sticky shift — tap=sticky, hold=shift
+    if behavior == '&sks':
+        return '\u21E7'
 
     # Soft off — Nerd:  power
     if behavior == '&soft_off':
@@ -999,7 +1003,8 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
     notes_row1 = [
         ('#ffffff', '\u232B tap=char \u00b7 hold=word'),
         ('#ffffff', '\u2326 tap=char \u00b7 hold=word'),
-        ('#ffffff', '\u21E7 hold=shift \u00b7 tap=capsword'),
+        ('#ffffff', 'L\u21E7 tap=sticky shift \u00b7 hold=shift'),
+        ('#ffffff', 'R\u21E7 hold=shift \u00b7 tap=capsword'),
         ('#ffb347', 'Sym tap=symbols \u00b7 2\u00d7tap=pin numpad'),
         ('#ffffff', '\u2318 tap=app menu \u00b7 hold=\u2318'),
     ]

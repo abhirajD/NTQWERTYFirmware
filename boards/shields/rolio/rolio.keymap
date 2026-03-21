@@ -43,7 +43,7 @@
 // ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮                                 ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮
        &kp GRAVE      &kp B            &kp L           &kp D           &kp W           &kp Z     /*|                                 |*/  &kp F          &kp O           &kp U           &kp J           &kp SEMI       &backspace_word LA(BSPC) BSPC
        &kp TAB        &kp N            &kp R           &kp T           &kp S           &kp G     /*├─────────────╮     ╭─────────────┤*/  &kp Y          &kp H           &kp A           &kp E           &kp I          &kp SQT
-       &kp LSHIFT     &kp Q            &kp X           &kp M           &kp C           &kp V           &kp F16             &kp F17        &kp K          &kp P           &kp COMMA       &kp DOT         &kp FSLH       &scw RSHIFT 0
+       &sks LSHIFT LSHIFT &kp Q            &kp X           &kp M           &kp C           &kp V           &kp F16             &kp F17        &kp K          &kp P           &kp COMMA       &kp DOT         &kp FSLH       &scw RSHIFT 0
 /* ╰───────────────┴───────────────┤*/ &mo KB_CONFIG   &kp LALT        &kp LCTRL       &kp LGUI   &lt M_FKEYS ENTER   &lt NUMPAD SPACE    &td1           &mt RGUI K_APP  &kp RCTRL       &delete_word LA(DEL) DEL   //├───────────────┴───────────────╯
 //                                 ╰───────────────┴───────────────┴───────────────┴───────────────┴─────────────╯     ╰─────────────┴───────────────┴───────────────┴───────────────┴───────────────╯
             >;
@@ -56,7 +56,7 @@
 // ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮                                 ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮
        &kp GRAVE      &kp Q            &kp W           &kp E           &kp R           &kp T     /*|                                 |*/  &kp Y          &kp U           &kp I           &kp O           &kp P          &backspace_word LA(BSPC) BSPC
        &kp TAB        &kp A            &kp S           &kp D           &kp F           &kp G     /*├─────────────╮     ╭─────────────┤*/  &kp H          &kp J           &kp K           &kp L           &kp SEMI       &kp SQT
-       &kp LSHIFT     &kp Z            &kp X           &kp C           &kp V           &kp B           &kp F16             &kp F17        &kp N          &kp M           &kp COMMA       &kp DOT         &kp FSLH       &scw RSHIFT 0
+       &sks LSHIFT LSHIFT &kp Z            &kp X           &kp C           &kp V           &kp B           &kp F16             &kp F17        &kp N          &kp M           &kp COMMA       &kp DOT         &kp FSLH       &scw RSHIFT 0
 /* ╰───────────────┴───────────────┤*/ &mo KB_CONFIG   &kp LALT        &kp LCTRL       &kp LGUI   &lt M_FKEYS ENTER   &lt NUMPAD SPACE    &td1           &mt RGUI K_APP  &kp RCTRL       &delete_word LA(DEL) DEL   //├───────────────┴───────────────╯
 //                                 ╰───────────────┴───────────────┴───────────────┴───────────────┴─────────────╯     ╰─────────────┴───────────────┴───────────────┴───────────────┴───────────────╯
             >;
@@ -69,7 +69,7 @@
 // ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮                                 ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮
        &kp GRAVE      &kp Q            &kp W           &kp E           &kp R           &kp T     /*|                                 |*/  &kp Y          &kp U           &kp I           &kp O           &kp P          &backspace_word LC(BSPC) BSPC
        &kp TAB        &kp A            &kp S           &kp D           &kp F           &kp G     /*├─────────────╮     ╭─────────────┤*/  &kp H          &kp J           &kp K           &kp L           &kp SEMI       &kp SQT
-       &kp LSHIFT     &kp Z            &kp X           &kp C           &kp V           &kp B           &kp F16             &kp F17        &kp N          &kp M           &kp COMMA       &kp DOT         &kp FSLH       &scw RSHIFT 0
+       &sks LSHIFT LSHIFT &kp Z            &kp X           &kp C           &kp V           &kp B           &kp F16             &kp F17        &kp N          &kp M           &kp COMMA       &kp DOT         &kp FSLH       &scw RSHIFT 0
 /* ╰───────────────┴───────────────┤*/ &mo KB_CONFIG   &kp LGUI        &kp LALT        &kp LCTRL   &lt W_FKEYS ENTER   &lt NUMPAD SPACE   &td2        &mt RCTRL K_APP    &kp RALT        &delete_word LC(DEL) DEL   //├───────────────┴───────────────╯
 //                                 ╰───────────────┴───────────────┴───────────────┴───────────────┴─────────────╯     ╰─────────────┴───────────────┴───────────────┴───────────────┴───────────────╯
             >;
@@ -80,9 +80,9 @@
             sensor-bindings = <&inc_dec_kp UP DOWN &inc_dec_kp LEFT RIGHT>;
             bindings = <
 // ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮                                 ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮
-       &kp UNDER       &kp N1          &kp N2          &kp N3          &kp N4          &kp N5    /*|                                 |*/  &kp N6         &kp N7          &kp N8          &kp N9          &kp N0          &kp DEL
+       &kp TILDE       &kp N1          &kp N2          &kp N3          &kp N4          &kp N5    /*|                                 |*/  &kp N6         &kp N7          &kp N8          &kp N9          &kp N0          &kp DEL
        ___             &kp EXCL        &kp AT          &kp HASH        &kp DLLR        &kp PRCNT /*├─────────────╮     ╭─────────────┤*/  &kp CARET      &kp AMPERSAND   &kp STAR        &kp LPAR        &kp RPAR        &kp MINUS
-       ___         &kp LC(LG(SPACE))   &kp LEFT_BRACE  &kp RIGHT_BRACE &kp PIPE        &kp EQUAL       ___                 ___            &kp PRCNT      &kp PLUS        &kp LBKT        &kp RBKT        &kp BACKSLASH   ___
+       ___         &kp LC(LG(SPACE))   &kp LEFT_BRACE  &kp RIGHT_BRACE &kp PIPE        &kp EQUAL       ___                 ___            &kp UNDER      &kp PLUS        &kp LBKT        &kp RBKT        &kp BACKSLASH   ___
 /* ╰───────────────┴───────────────┤*/ ___             ___             ___             ___             ___                 ___            ___            ___             ___             ___       //├───────────────┴───────────────╯
 //                                 ╰───────────────┴───────────────┴───────────────┴───────────────┴─────────────╯     ╰─────────────┴───────────────┴───────────────┴───────────────┴───────────────╯
             >;
@@ -93,9 +93,9 @@
             sensor-bindings = <&inc_dec_kp UP DOWN &inc_dec_kp LEFT RIGHT>;
             bindings = <
 // ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮                                 ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮
-       &kp UNDER       &kp N1          &kp N2          &kp N3          &kp N4          &kp N5    /*|                                 |*/  &kp N6         &kp N7          &kp N8          &kp N9          &kp N0          &kp DEL
+       &kp TILDE       &kp N1          &kp N2          &kp N3          &kp N4          &kp N5    /*|                                 |*/  &kp N6         &kp N7          &kp N8          &kp N9          &kp N0          &kp DEL
        ___             &kp EXCL        &kp AT          &kp HASH        &kp DLLR        &kp PRCNT /*├─────────────╮     ╭─────────────┤*/  &kp CARET      &kp AMPERSAND   &kp STAR        &kp LPAR        &kp RPAR        &kp MINUS
-       ___             &kp LG(DOT)     &kp LEFT_BRACE  &kp RIGHT_BRACE &kp PIPE        &kp EQUAL       ___                 ___            &kp PRCNT      &kp PLUS        &kp LBKT        &kp RBKT        &kp BACKSLASH   ___
+       ___             &kp LG(DOT)     &kp LEFT_BRACE  &kp RIGHT_BRACE &kp PIPE        &kp EQUAL       ___                 ___            &kp UNDER      &kp PLUS        &kp LBKT        &kp RBKT        &kp BACKSLASH   ___
 /* ╰───────────────┴───────────────┤*/ ___             ___             ___             ___             ___                 ___            ___            ___             ___             ___       //├───────────────┴───────────────╯
 //                                 ╰───────────────┴───────────────┴───────────────┴───────────────┴─────────────╯     ╰─────────────┴───────────────┴───────────────┴───────────────┴───────────────╯
             >;
@@ -108,7 +108,7 @@
 // ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮                                 ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬───────────────╮
        ___             &kp N1          &kp N2          &kp N3          &kp N4          &kp N5    /*|                                 |*/    &kp N6         &kp N7          &kp N8          &kp N9          &kp N0          ___ 
        ___             &kp EXCL        &kp AT          &kp HASH        &kp DLLR        &kp PRCNT /*├─────────────╮     ╭─────────────┤*/  &kp CARET      &kp N4          &kp N5          &mt LPAR N6     &mt RPAR PLUS   &kp MINUS
-       ___             ___             &kp LEFT_BRACE  &kp RIGHT_BRACE &kp PIPE        &kp EQUAL       ___                 ___            &kp PRCNT      &kp N1          &mt COMMA N2    &mt DOT N3      &kp KP_DIVIDE   &kp KP_MULTIPLY
+       ___             ___             &kp LEFT_BRACE  &kp RIGHT_BRACE &kp PIPE        &kp EQUAL       ___                 ___            &kp UNDER      &kp N1          &mt COMMA N2    &mt DOT N3      &kp KP_DIVIDE   &kp KP_MULTIPLY
 /* ╰───────────────┴───────────────┤*/ ___             ___             ___             ___             ___                 ___            &tog NUMPAD    &kp N0          &kp KP_DOT      ___       //├───────────────┴───────────────╯
 //                                 ╰───────────────┴───────────────┴───────────────┴───────────────┴─────────────╯     ╰─────────────┴───────────────┴───────────────┴───────────────┴───────────────╯
             >;
