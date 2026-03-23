@@ -999,6 +999,42 @@ def render_keyboard(all_layers, layer_configs, config, output_path,
         text_w = text_bbox[2] - text_bbox[0] if text_bbox else len(name) * 8
         legend_x += 2 * dot_r + 8 + text_w + 30
 
+    # ─── Combo badges — bracket symbols between key pairs ───
+    COMBOS = [
+        (14, 15, '('),   # R+T
+        (21, 20, ')'),   # E+A
+        (15, 16, '{'),   # T+S
+        (20, 19, '}'),   # A+H
+        (13, 14, '['),   # N+R
+        (22, 21, ']'),   # I+E
+    ]
+    combo_size = max(14, int(key_px * 0.18))
+    combo_chain = load_font(combo_size)
+    combo_text_color = (255, 200, 100)  # warm amber — full brightness for legibility
+    combo_bg_color = dim_color(combo_text_color, bg_color, alpha=0.22)
+    for pos_a, pos_b, symbol in COMBOS:
+        if pos_a >= len(key_bboxes) or pos_b >= len(key_bboxes):
+            continue
+        ax0, ay0, ax1, ay1 = key_bboxes[pos_a]
+        bx0, by0, bx1, by1 = key_bboxes[pos_b]
+        # Midpoint between the two keys
+        cx = (ax0 + ax1 + bx0 + bx1) // 4
+        cy = (ay0 + ay1 + by0 + by1) // 4
+        # Draw pill background
+        cf = combo_chain.select(symbol)
+        tb = cf.getbbox(symbol)
+        tw = tb[2] - tb[0] if tb else combo_size
+        th = tb[3] - tb[1] if tb else combo_size
+        pad = max(4, combo_size // 3)
+        pill_w = tw + pad * 2
+        pill_h = th + pad * 2
+        draw.rounded_rectangle(
+            (cx - pill_w // 2, cy - pill_h // 2,
+             cx + pill_w // 2, cy + pill_h // 2),
+            radius=pad, fill=combo_bg_color)
+        combo_chain.render(draw, (cx, cy), symbol,
+                           fill=combo_text_color, anchor='mm')
+
     # ─── Behavior notes — two rows of compact notes ───
     notes_row1 = [
         ('#ffffff', '\u232B tap=char \u00b7 hold=word'),

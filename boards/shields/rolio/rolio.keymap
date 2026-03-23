@@ -33,6 +33,18 @@
 
 / {
 
+    combos {
+        compatible = "zmk,combos";
+        // Bracket combos — adjacent home-row keys, mirrored across split
+        // Pattern: outer pair = [], middle pair = (), inner pair = {}
+        combo_lpar  { timeout-ms = <30>; key-positions = <14 15>; bindings = <&kp LPAR>; };   // R+T → (
+        combo_rpar  { timeout-ms = <30>; key-positions = <21 20>; bindings = <&kp RPAR>; };   // E+A → )
+        combo_lbrc  { timeout-ms = <30>; key-positions = <15 16>; bindings = <&kp LBRC>; };   // T+S → {
+        combo_rbrc  { timeout-ms = <30>; key-positions = <20 19>; bindings = <&kp RBRC>; };   // A+H → }
+        combo_lbkt  { timeout-ms = <30>; key-positions = <13 14>; bindings = <&kp LBKT>; };   // N+R → [
+        combo_rbkt  { timeout-ms = <30>; key-positions = <22 21>; bindings = <&kp RBKT>; };   // I+E → ]
+    };
+
     keymap {
         compatible = "zmk,keymap";
 
